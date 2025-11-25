@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "use-gluestack-components": {
+      "command": "node",
+      "args": ["/Users/abulbasar/Desktop/mcp/index.js"]
+    }
+  }
+}
