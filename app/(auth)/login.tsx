@@ -3,7 +3,7 @@ import { Link, router } from "expo-router";
 import { AlertCircle, Eye, EyeOff } from "lucide-react-native";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Keyboard } from "react-native";
+import { Image, Keyboard } from "react-native";
 import { z } from "zod";
 
 import { Box } from "@/components/ui/box";
@@ -63,6 +63,11 @@ export default function LoginScreen() {
         <VStack space="4xl" className="w-full max-w-[400px]">
           {/* Header Section */}
           <VStack space="xs" className="items-center">
+            <Image
+              source={require("@/assets/logos/ovidio_logo.png")}
+              className="w-24 h-24 mb-2"
+              resizeMode="contain"
+            />
             <Heading
               size="3xl"
               className="text-typography-900 tracking-tight text-center"

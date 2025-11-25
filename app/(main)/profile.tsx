@@ -9,7 +9,7 @@ import {
   User,
 } from "lucide-react-native";
 import React from "react";
-import { ScrollView, TouchableOpacity } from "react-native";
+import { Image, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Avatar, AvatarFallbackText } from "@/components/ui/avatar";
@@ -100,9 +100,16 @@ export default function ProfileScreen() {
               <Text className="text-error-500 font-bold">Log Out</Text>
             </TouchableOpacity>
 
-            <Text className="text-typography-400 text-xs text-center mt-4">
-              Version 1.0.0 • Build 2024
-            </Text>
+            <VStack className="items-center mt-6">
+              <Image
+                source={require("@/assets/logos/ovidio_logo.png")}
+                className="w-10 h-10 mb-2 opacity-30"
+                resizeMode="contain"
+              />
+              <Text className="text-typography-400 text-xs text-center">
+                Version 1.0.0 • Build 2024
+              </Text>
+            </VStack>
           </VStack>
         </ScrollView>
       </SafeAreaView>
