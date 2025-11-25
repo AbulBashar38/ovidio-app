@@ -1,0 +1,111 @@
+import { router } from "expo-router";
+import {
+  Bell,
+  ChevronRight,
+  CreditCard,
+  LogOut,
+  Settings,
+  Shield,
+  User,
+} from "lucide-react-native";
+import React from "react";
+import { ScrollView, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { Avatar, AvatarFallbackText } from "@/components/ui/avatar";
+import { Box } from "@/components/ui/box";
+import { Divider } from "@/components/ui/divider";
+import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+
+export default function ProfileScreen() {
+  const handleLogout = () => {
+    router.replace("/(auth)/login");
+  };
+
+  const menuItems = [
+    { icon: User, label: "Account Details" },
+    { icon: Bell, label: "Notifications" },
+    { icon: CreditCard, label: "Subscription" },
+    { icon: Shield, label: "Privacy & Security" },
+    { icon: Settings, label: "App Settings" },
+  ];
+
+  return (
+    <Box className="flex-1 bg-background-0">
+      <SafeAreaView className="flex-1">
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          <VStack space="4xl" className="p-6">
+            {/* Header */}
+            <Heading size="2xl" className="text-typography-900 font-heading">
+              Profile
+            </Heading>
+
+            {/* User Info */}
+            <HStack space="md" className="items-center">
+              <Avatar size="xl" className="bg-primary-500">
+                <AvatarFallbackText className="text-white">
+                  JD
+                </AvatarFallbackText>
+              </Avatar>
+              <VStack>
+                <Heading size="md" className="text-typography-900">
+                  John Doe
+                </Heading>
+                <Text className="text-typography-500">
+                  john.doe@example.com
+                </Text>
+                <Box className="bg-primary-500/10 self-start px-2 py-1 rounded-md mt-1">
+                  <Text className="text-primary-500 text-xs font-bold">
+                    PREMIUM
+                  </Text>
+                </Box>
+              </VStack>
+            </HStack>
+
+            {/* Menu */}
+            <VStack space="md">
+              <Text className="text-typography-500 font-bold text-sm uppercase tracking-wider mb-2">
+                General
+              </Text>
+              <VStack className="bg-background-50 rounded-2xl overflow-hidden border border-outline-100">
+                {menuItems.map((item, index) => (
+                  <React.Fragment key={item.label}>
+                    {index > 0 && <Divider className="bg-outline-100" />}
+                    <TouchableOpacity className="p-4 flex-row items-center active:bg-background-100">
+                      <Box className="w-10 h-10 bg-background-200 rounded-full items-center justify-center mr-4">
+                        <item.icon size={20} className="text-typography-900" />
+                      </Box>
+                      <Text className="flex-1 text-typography-900 font-medium text-base">
+                        {item.label}
+                      </Text>
+                      <ChevronRight size={20} className="text-typography-400" />
+                    </TouchableOpacity>
+                  </React.Fragment>
+                ))}
+              </VStack>
+            </VStack>
+
+            {/* Logout */}
+            <TouchableOpacity
+              onPress={handleLogout}
+              className="flex-row items-center justify-center p-4 rounded-2xl border border-error-500/20 bg-error-500/5 active:bg-error-500/10"
+            >
+              <LogOut size={20} className="text-error-500 mr-2" />
+              <Text className="text-error-500 font-bold">Log Out</Text>
+            </TouchableOpacity>
+
+            <Text className="text-typography-400 text-xs text-center mt-4">
+              Version 1.0.0 • Build 2024
+            </Text>
+          </VStack>
+        </ScrollView>
+      </SafeAreaView>
+    </Box>
+  );
+}
