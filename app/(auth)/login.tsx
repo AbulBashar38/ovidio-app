@@ -20,7 +20,12 @@ import {
 import { Heading } from "@/components/ui/heading";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
+import { Toast, ToastTitle, useToast } from "@/components/ui/toast";
 import { VStack } from "@/components/ui/vstack";
+import { useAppDispatch } from "@/hooks/reduxHooks";
+import { useLoginMutation } from "@/state-management/features/auth/authApi";
+import { setAuth } from "@/state-management/features/auth/authSlice";
+import { setUser } from "@/state-management/features/auth/userSlice";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
@@ -31,7 +36,10 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  
+  const [login, { isLoading }] = useLoginMutation();
+  const dispatch = useAppDispatch();
+  const toast = useToast();
 
   const {
     control,
@@ -40,21 +48,44 @@ export default function LoginScreen() {
   } = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "sfd@g.com",
-      password: "dsfsdfsfsf32324",
+      email: "",
+      password: "",
     },
   });
 
   const onSubmit = async (data: LoginSchema) => {
     Keyboard.dismiss();
-    setIsLoading(true);
     console.log("Form Data Submitted:", data);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await login(data).unwrap();
+      
+      // Dispatch auth data to auth slice
+      dispatch(setAuth({
+        token: response.accessToken,
+        refreshToken: response.refreshToken,
+        emailVerified: response.emailVerified,
+      }));
+
+      // Dispatch user data to user slice
+      dispatch(setUser(response.user));
+
+      // Navigate to home on success
       router.replace("/(main)/home");
-    }, 1500);
+    } catch (err: any) {
+      console.error("Login failed", err);
+      
+      // Show error toast
+      const errorMessage = err?.data?.message || "Login failed. Please try again.";
+      toast.show({
+        placement: "top",
+        render: ({ id }) => (
+          <Toast nativeID={`toast-${id}`} action="error" variant="solid">
+            <ToastTitle>{errorMessage}</ToastTitle>
+          </Toast>
+        ),
+      });
+    }
   };
 
   return (

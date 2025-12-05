@@ -19,10 +19,29 @@ import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { api } from "@/state-management/apiConfig";
+import { clearAuth } from "@/state-management/features/auth/authSlice";
+import { clearUser, selectUser } from "@/state-management/features/auth/userSlice";
+import { persistor } from "@/state-management/store";
 
 export default function ProfileScreen() {
-  const handleLogout = () => {
-    router.replace("/(auth)/login");
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+
+  const handleLogout = async () => {
+    
+      // 2. Clear Redux State
+      dispatch(clearAuth());
+      dispatch(clearUser());
+      dispatch(api.util.resetApiState());
+
+      // 3. Purge Persisted Storage
+      await persistor.purge();
+
+      // 4. Redirect to Login
+      router.replace("/(auth)/login");
+  
   };
 
   const menuItems = [
@@ -50,26 +69,26 @@ export default function ProfileScreen() {
             <HStack space="md" className="items-center">
               <Avatar size="xl" className="bg-primary-500">
                 <AvatarFallbackText className="text-white">
-                  JD
+                  {user.firstName ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ""}` : "JD"}
                 </AvatarFallbackText>
               </Avatar>
               <VStack>
                 <Heading size="md" className="text-typography-900">
-                  John Doe
+                  {user.firstName} {user.lastName}
                 </Heading>
                 <Text className="text-typography-500">
-                  john.doe@example.com
+                  {user.email}
                 </Text>
                 <Box className="bg-primary-500/10 self-start px-2 py-1 rounded-md mt-1">
                   <Text className="text-primary-500 text-xs font-bold">
-                    PREMIUM
+                    {user.role}
                   </Text>
                 </Box>
               </VStack>
             </HStack>
 
             {/* Menu */}
-            <VStack space="md">
+            <VStack space="lg">
               <Text className="text-typography-500 font-bold text-sm uppercase tracking-wider mb-2">
                 General
               </Text>
