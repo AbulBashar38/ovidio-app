@@ -40,7 +40,7 @@ export default function ProfileScreen() {
     await persistor.purge();
 
     // 4. Redirect to Login
-    router.push("/(auth)/login");
+    router.replace("/(auth)/login");
 
   };
 

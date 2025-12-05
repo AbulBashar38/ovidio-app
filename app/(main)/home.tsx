@@ -33,6 +33,8 @@ export default function HomeScreen() {
       (job) => job.status !== "COMPLETED" && job.status !== "FAILED"
     ) || [];
 
+
+
   return (
     <Box className="flex-1 bg-background-0">
       <SafeAreaView className="flex-1" edges={["top"]}>

@@ -4,10 +4,13 @@ import { HStack } from "@/components/ui/hstack";
 import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { useAppDispatch } from "@/hooks/reduxHooks";
+import { api } from "@/state-management/apiConfig";
 import { useGetBookProgressQuery } from "@/state-management/services/books/booksApi";
 import { BookJob, JobStep } from "@/type/book";
 import { FileText } from "lucide-react-native";
 import { MotiView } from "moti";
+import { useEffect } from "react";
 
 interface InProgressCardProps {
     job: BookJob;
@@ -42,10 +45,12 @@ const STEP_LABELS: Record<JobStep, string> = {
 };
 
 export function InProgressCard({ job }: InProgressCardProps) {
+    const dispatch = useAppDispatch();
     const { data: progressData } = useGetBookProgressQuery(job.id, {
         pollingInterval: 30000, // Poll every 30 seconds
         skipPollingIfUnfocused: true, // Pause polling when tab is not focused
     });
+
 
     // Use progress data if available, otherwise use the job prop
     const currentStatus = progressData?.status || job.status;
@@ -55,6 +60,13 @@ export function InProgressCard({ job }: InProgressCardProps) {
     );
     const progress = latestEvent?.progress ?? STEP_PROGRESS[currentStep] ?? 5;
     const statusLabel = latestEvent?.message ?? STEP_LABELS[currentStep] ?? "Processing...";
+
+    useEffect(() => {
+        if (progress === 100 || currentStatus === "COMPLETED") {
+            // Refetch all books to update lists
+            dispatch(api.util.invalidateTags(["books"]));
+        }
+    }, [progress, currentStatus, dispatch]);
 
     return (
         <MotiView
