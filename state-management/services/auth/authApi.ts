@@ -31,12 +31,19 @@ const authApi = api.enhanceEndpoints({
         updateProfilePhoto: builder.mutation<void, { imageUrl: string }>({
             query: (body) => ({
                 url: "/auth/profile/photo",
-                method: "PUT",
+                method: "POST",
                 body,
             }),
             invalidatesTags: ["user"],
         }),
-    })
-})
+        forgotPassword: builder.mutation<void, { email: string }>({
+            query: (data) => ({
+                url: "/auth/password/forgot",
+                method: "POST",
+                body: data,
+            }),
+        }),
+    }),
+});
 
-export const { useRegisterMutation, useLoginMutation, useGetUserQuery, useUpdateProfilePhotoMutation } = authApi;
+export const { useRegisterMutation, useLoginMutation, useGetUserQuery, useUpdateProfilePhotoMutation, useForgotPasswordMutation } = authApi;

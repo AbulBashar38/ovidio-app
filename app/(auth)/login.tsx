@@ -194,6 +194,15 @@ export default function LoginScreen() {
               )}
             />
 
+            {/* Forgot Password Link */}
+            <Box className="items-end">
+              <Link href="/(auth)/forgot-password">
+                <Text className="text-primary-500 font-medium text-sm">
+                  Forgot Password?
+                </Text>
+              </Link>
+            </Box>
+
             {/* Submit Button */}
             <Button
               size="xl"
