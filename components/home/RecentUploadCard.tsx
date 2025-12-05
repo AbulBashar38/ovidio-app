@@ -1,16 +1,26 @@
 import { Box } from "@/components/ui/box";
 import { Center } from "@/components/ui/center";
 import { Text } from "@/components/ui/text";
-import { Book } from "@/lib/mock-data";
+import { BookJob } from "@/type/book";
 import { router } from "expo-router";
 import { FileText } from "lucide-react-native";
 import { TouchableOpacity } from "react-native";
 
 interface RecentUploadCardProps {
-    book: Book;
+    book: BookJob;
 }
 
 export function RecentUploadCard({ book }: RecentUploadCardProps) {
+    const formattedDuration = book.estimatedDuration
+        ? `${Math.round(book.estimatedDuration / 60)} min`
+        : "Unknown";
+
+    // Format date as "Nov 23"
+    const dateLabel = new Date(book.createdAt).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+    });
+
     return (
         <TouchableOpacity onPress={() => router.push("/(main)/player")}>
             <Box className="w-40 bg-background-50 rounded-2xl p-4 border border-outline-100">
@@ -21,7 +31,7 @@ export function RecentUploadCard({ book }: RecentUploadCardProps) {
                     </Center>
                     <Box className="absolute bottom-2 right-2 bg-black/60 px-2 py-1 rounded-md backdrop-blur-sm">
                         <Text className="text-white text-[10px] font-medium">
-                            {book.duration}
+                            {formattedDuration}
                         </Text>
                     </Box>
                 </Box>
@@ -29,13 +39,13 @@ export function RecentUploadCard({ book }: RecentUploadCardProps) {
                     className="text-typography-900 font-bold text-base truncate"
                     numberOfLines={1}
                 >
-                    {book.title}
+                    {book.originalFilename}
                 </Text>
                 <Text
                     className="text-typography-500 text-xs truncate"
                     numberOfLines={1}
                 >
-                    {book.author}
+                    {dateLabel}
                 </Text>
             </Box>
         </TouchableOpacity>

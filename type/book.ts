@@ -50,13 +50,19 @@ export interface BookJob {
     errorMessage: string | null;
     backgroundTrack: string | null;
     createdAt: string;
-    updatedAt: string;
+    completedAt?: string;
     audioFile: any | null;
+    events?: JobEvent[];
 }
 
 export interface GetBooksResponse {
     jobs: BookJob[];
 }
+
+export interface GetBookDetailsResponse {
+    job: BookJob;
+}
+
 export interface GetBookProgressResponse {
     status: JobStatus;
     currentStep: JobStep;

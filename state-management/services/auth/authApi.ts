@@ -28,7 +28,15 @@ const authApi = api.enhanceEndpoints({
             }),
             providesTags: ["user"],
         }),
+        updateProfilePhoto: builder.mutation<void, { imageUrl: string }>({
+            query: (body) => ({
+                url: "/auth/profile/photo",
+                method: "PUT",
+                body,
+            }),
+            invalidatesTags: ["user"],
+        }),
     })
 })
 
-export const { useRegisterMutation, useLoginMutation, useGetUserQuery } = authApi;
+export const { useRegisterMutation, useLoginMutation, useGetUserQuery, useUpdateProfilePhotoMutation } = authApi;

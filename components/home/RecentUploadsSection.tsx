@@ -1,13 +1,12 @@
-import { HStack } from "@/components/ui/hstack";
+import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
-import { Book } from "@/lib/mock-data";
-import { router } from "expo-router";
-import { ScrollView, TouchableOpacity } from "react-native";
+import { BookJob } from "@/type/book";
+import { ScrollView } from "react-native";
 import { RecentUploadCard } from "./RecentUploadCard";
 
 interface RecentUploadsSectionProps {
-    books: Book[];
+    books: BookJob[];
 }
 
 export function RecentUploadsSection({ books }: RecentUploadsSectionProps) {
@@ -15,25 +14,20 @@ export function RecentUploadsSection({ books }: RecentUploadsSectionProps) {
 
     return (
         <VStack space="md">
-            <HStack className="justify-between items-center">
+            <Box className="flex-row justify-between items-center">
                 <Text className="text-typography-900 font-bold text-lg">
                     Recent Uploads
                 </Text>
-                <TouchableOpacity onPress={() => router.push("/(main)/library")}>
-                    <Text className="text-primary-500 font-medium text-sm">See All</Text>
-                </TouchableOpacity>
-            </HStack>
-
+                <Text className="text-primary-500 font-bold text-sm">See All</Text>
+            </Box>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                className="-mx-6 px-6"
+                contentContainerStyle={{ gap: 12 }}
             >
-                <HStack space="md">
-                    {books.map((book) => (
-                        <RecentUploadCard key={book.id} book={book} />
-                    ))}
-                </HStack>
+                {books.map((book) => (
+                    <RecentUploadCard key={book.id} book={book} />
+                ))}
             </ScrollView>
         </VStack>
     );

@@ -12,7 +12,7 @@ import React from "react";
 import { Image, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Avatar, AvatarFallbackText } from "@/components/ui/avatar";
+import { Avatar, AvatarFallbackText, AvatarImage } from "@/components/ui/avatar";
 import { Box } from "@/components/ui/box";
 import { Divider } from "@/components/ui/divider";
 import { Heading } from "@/components/ui/heading";
@@ -45,7 +45,7 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    { icon: User, label: "Account Details" },
+    { icon: User, label: "Account Details", route: "/(main)/account-details" },
     { icon: Bell, label: "Notifications" },
     { icon: CreditCard, label: "Subscription" },
     { icon: Shield, label: "Privacy & Security" },
@@ -71,6 +71,11 @@ export default function ProfileScreen() {
                 <AvatarFallbackText className="text-white">
                   {user.firstName ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ""}` : "JD"}
                 </AvatarFallbackText>
+                <AvatarImage
+                  source={{ uri: user.profilePhotoUrl }}
+                  alt="Profile Photo"
+                  className="w-full h-full rounded-full"
+                />
               </Avatar>
               <VStack>
                 <Heading size="md" className="text-typography-900">
@@ -96,7 +101,10 @@ export default function ProfileScreen() {
                 {menuItems.map((item, index) => (
                   <React.Fragment key={item.label}>
                     {index > 0 && <Divider className="bg-outline-100" />}
-                    <TouchableOpacity className="p-4 flex-row items-center active:bg-background-100">
+                    <TouchableOpacity
+                      className="p-4 flex-row items-center active:bg-background-100"
+                      onPress={() => item.route && router.push(item.route as any)}
+                    >
                       <Box className="w-10 h-10 bg-background-200 rounded-full items-center justify-center mr-4">
                         <item.icon size={20} className="text-typography-900" />
                       </Box>

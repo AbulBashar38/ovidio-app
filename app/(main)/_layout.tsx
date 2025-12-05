@@ -2,17 +2,20 @@ import { Tabs } from "expo-router";
 import { Home, UploadCloud, User } from "lucide-react-native";
 import { Platform } from "react-native";
 
-export default function MainLayout() {
-  return (
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+export default function MainLayout() {
+  const insets = useSafeAreaInsets();
+
+  return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
           backgroundColor: "#181719", // bg-background-950/dark
           borderTopColor: "#27272A", // border-outline-800
-          height: Platform.OS === "ios" ? 88 : 68,
-          paddingBottom: Platform.OS === "ios" ? 28 : 10,
+          height: Platform.OS === "ios" ? 88 : 60 + insets.bottom,
+          paddingBottom: Platform.OS === "ios" ? 28 : insets.bottom + 10,
           paddingTop: 10,
         },
         tabBarActiveTintColor: "#FFFFFF",
@@ -58,6 +61,12 @@ export default function MainLayout() {
       />
       <Tabs.Screen
         name="library"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="account-details"
         options={{
           href: null,
         }}

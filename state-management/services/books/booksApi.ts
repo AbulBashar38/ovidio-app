@@ -23,7 +23,11 @@ const booksApi = api.enhanceEndpoints({ addTagTypes: ["books"] }).injectEndpoint
             query: (id) => `${ENDPOINTS.books}/${id}/progress`,
             providesTags: (_result, _error, id) => [{ type: "books", id }],
         }),
+        getBookDetails: builder.query<GetBookDetailsResponse, string>({
+            query: (id) => `${ENDPOINTS.books}/${id}`,
+            providesTags: (_result, _error, id) => [{ type: "books", id }],
+        }),
     }),
 });
 
-export const { useSubmitBookMutation, useGetBooksQuery, useGetBookProgressQuery } = booksApi;
+export const { useSubmitBookMutation, useGetBooksQuery, useGetBookProgressQuery, useGetBookDetailsQuery } = booksApi;

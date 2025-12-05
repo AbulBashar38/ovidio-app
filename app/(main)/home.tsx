@@ -5,16 +5,13 @@ import { InProgressSection } from "@/components/home/InProgressSection";
 import { RecentUploadsSection } from "@/components/home/RecentUploadsSection";
 import { Box } from "@/components/ui/box";
 import { VStack } from "@/components/ui/vstack";
-import { MOCK_BOOKS } from "@/lib/mock-data";
 import { useGetBooksQuery } from "@/state-management/services/books/booksApi";
 import React from "react";
 import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
-  const convertingBooks = MOCK_BOOKS.filter((b) => b.status === "converting");
-  const completedBooks = MOCK_BOOKS.filter((b) => b.status === "completed");
-  const recentUploads = completedBooks.slice(0, 3);
+
   const { data, isLoading, error } = useGetBooksQuery();
 
   if (isLoading) {
@@ -33,7 +30,16 @@ export default function HomeScreen() {
       (job) => job.status !== "COMPLETED" && job.status !== "FAILED"
     ) || [];
 
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
+  const recentBooks =
+    data?.jobs.filter(
+      (job) =>
+        job.status === "COMPLETED" &&
+        job.completedAt &&
+        new Date(job.completedAt) > oneMonthAgo
+    ) || [];
 
   return (
     <Box className="flex-1 bg-background-0">
@@ -48,9 +54,9 @@ export default function HomeScreen() {
 
             <InProgressSection jobs={inProgressBooks} />
 
-            <RecentUploadsSection books={recentUploads} />
+            <RecentUploadsSection books={recentBooks} />
 
-            <AllUploadsSection books={completedBooks} />
+            <AllUploadsSection books={data?.jobs || []} />
           </VStack>
         </ScrollView>
       </SafeAreaView>
