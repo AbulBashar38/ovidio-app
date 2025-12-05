@@ -23,9 +23,9 @@ import { Text } from "@/components/ui/text";
 import { Toast, ToastTitle, useToast } from "@/components/ui/toast";
 import { VStack } from "@/components/ui/vstack";
 import { useAppDispatch } from "@/hooks/reduxHooks";
-import { useRegisterMutation } from "@/state-management/features/auth/authApi";
 import { setAuth } from "@/state-management/features/auth/authSlice";
 import { setUser } from "@/state-management/features/auth/userSlice";
+import { useRegisterMutation } from "@/state-management/services/auth/authApi";
 
 const registerSchema = z
   .object({

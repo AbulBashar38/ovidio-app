@@ -23,9 +23,9 @@ import { Text } from "@/components/ui/text";
 import { Toast, ToastTitle, useToast } from "@/components/ui/toast";
 import { VStack } from "@/components/ui/vstack";
 import { useAppDispatch } from "@/hooks/reduxHooks";
-import { useLoginMutation } from "@/state-management/features/auth/authApi";
 import { setAuth } from "@/state-management/features/auth/authSlice";
 import { setUser } from "@/state-management/features/auth/userSlice";
+import { useLoginMutation } from "@/state-management/services/auth/authApi";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),

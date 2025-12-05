@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
-import { useGetUserQuery } from "@/state-management/features/auth/authApi";
 import { selectAuth } from "@/state-management/features/auth/authSlice";
 import { selectUser, setUser } from "@/state-management/features/auth/userSlice";
+import { useGetUserQuery } from "@/state-management/services/auth/authApi";
 import { router, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";

@@ -1,3 +1,6 @@
+import { useSubmitBookMutation } from "@/state-management/services/books/booksApi";
+import { uploadToS3 } from "@/state-management/services/s3Upload";
+
 import * as DocumentPicker from "expo-document-picker";
 import { router } from "expo-router";
 import {
@@ -32,6 +35,8 @@ export default function UploadScreen() {
   const [isUploading, setIsUploading] = useState(false);
   const toast = useToast();
 
+  const [submitBook, { isLoading: isSubmitting }] = useSubmitBookMutation();
+
   const pickDocument = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -47,42 +52,79 @@ export default function UploadScreen() {
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
 
     setIsUploading(true);
 
-    // Simulate upload delay
-    setTimeout(() => {
+    // 1. Upload to S3
+    const s3Result = await uploadToS3({
+      file: {
+        uri: file.uri,
+        name: file.name,
+        mimeType: file.mimeType,
+      },
+      onProgress: (progress) => {
+        // Optional: Update progress state if you want to show a bar
+      },
+    });
+
+    if (!s3Result.success || !s3Result.fileUrl) {
+      setIsUploading(false);
+      toast.show({
+        placement: "top",
+        render: ({ id }) => (
+          <Toast nativeID={"toast-" + id} action="error" variant="solid">
+            <VStack space="xs">
+              <ToastTitle className="text-white font-bold">Upload Failed</ToastTitle>
+              <ToastDescription className="text-white">{s3Result.error}</ToastDescription>
+            </VStack>
+          </Toast>
+        ),
+      });
+      return;
+    }
+
+    // 2. Submit to Backend API
+    try {
+      await submitBook({
+        pdfUrl: s3Result.fileUrl,
+        originalFilename: file.name,
+        backgroundAudio: true,
+      }).unwrap();
+
       setIsUploading(false);
 
       toast.show({
         placement: "top",
-        render: ({ id }) => {
-          return (
-            <Toast
-              nativeID={"toast-" + id}
-              action="success"
-              variant="outline"
-              className="bg-background-0 border-success-500"
-            >
-              <VStack space="xs">
-                <ToastTitle className="text-success-500 font-bold">
-                  Upload Successful
-                </ToastTitle>
-                <ToastDescription className="text-typography-500">
-                  Your book is now being processed.
-                </ToastDescription>
-              </VStack>
-            </Toast>
-          );
-        },
+        render: ({ id }) => (
+          <Toast nativeID={"toast-" + id} action="success" variant="outline" className="bg-background-0 border-success-500">
+            <VStack space="xs">
+              <ToastTitle className="text-success-500 font-bold">Success!</ToastTitle>
+              <ToastDescription className="text-typography-500">Book submitted for processing.</ToastDescription>
+            </VStack>
+          </Toast>
+        ),
       });
 
-      // Reset and go home
       setFile(null);
-      router.replace("/(main)/home");
-    }, 2000);
+      router.navigate("/(main)/home");
+
+    } catch (err: any) {
+      setIsUploading(false);
+      console.error("Book submission failed", err);
+      toast.show({
+        placement: "top",
+        render: ({ id }) => (
+          <Toast nativeID={"toast-" + id} action="error" variant="solid">
+            <VStack space="xs">
+              <ToastTitle className="text-white font-bold">Submission Failed</ToastTitle>
+              <ToastDescription className="text-white">{err?.data?.message || "Failed to submit book."}</ToastDescription>
+            </VStack>
+          </Toast>
+        ),
+      });
+    }
   };
 
   const formatSize = (bytes?: number) => {
