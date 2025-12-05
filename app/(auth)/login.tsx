@@ -36,7 +36,7 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -59,7 +59,7 @@ export default function LoginScreen() {
 
     try {
       const response = await login(data).unwrap();
-      
+
       // Dispatch auth data to auth slice
       dispatch(setAuth({
         token: response.accessToken,
@@ -74,7 +74,7 @@ export default function LoginScreen() {
       router.replace("/(main)/home");
     } catch (err: any) {
       console.error("Login failed", err);
-      
+
       // Show error toast
       const errorMessage = err?.data?.message || "Login failed. Please try again.";
       toast.show({

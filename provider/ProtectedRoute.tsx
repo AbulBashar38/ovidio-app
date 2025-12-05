@@ -13,6 +13,7 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { token } = useAppSelector(selectAuth);
   const user = useAppSelector(selectUser);
+
   const segments = useSegments();
   const [isMounted, setIsMounted] = useState(false);
   const dispatch = useAppDispatch();
@@ -43,7 +44,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
       router.replace("/(auth)/login");
     } else if (token) {
       // User is authenticated
-      
+
       // Check if email is verified
       const isEmailVerified = !!user.emailVerifiedAt;
 
@@ -59,8 +60,9 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }, [token, segments, isMounted, user.emailVerifiedAt]);
 
-  if (!isMounted || (!token && segments[0] !== "(auth)") || (token && !user.id && isUserLoading)) {
-      // While checking, redirecting, or fetching user data, show nothing or a spinner
+  // If not mounted, show loader to prevent flashes
+  if (!isMounted || (token && !user.id && isUserLoading)) {
+    // While checking, redirecting, or fetching user data, show nothing or a spinner
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#181719" }}>
         <ActivityIndicator size="large" color="#ffffff" />

@@ -20,6 +20,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/global.css";
+import ProtectedRoute from "@/provider/ProtectedRoute";
 import { persistor, store } from "@/state-management/store";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -49,17 +50,19 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <GluestackUIProvider mode="dark">
-          <ThemeProvider
-            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-          >
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(main)" />
-            </Stack>
-            <StatusBar style="auto" />
-          </ThemeProvider>
-        </GluestackUIProvider>
+        <ProtectedRoute>
+          <GluestackUIProvider mode="dark">
+            <ThemeProvider
+              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(main)" />
+              </Stack>
+              <StatusBar style="auto" />
+            </ThemeProvider>
+          </GluestackUIProvider>
+        </ProtectedRoute>
       </PersistGate>
     </Provider>
   );

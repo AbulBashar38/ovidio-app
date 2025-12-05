@@ -73,7 +73,7 @@ export default function RegisterScreen() {
       // Remove confirmPassword before sending to API
       const { confirmPassword, ...registerData } = data;
       const response = await register(registerData).unwrap();
-      
+
       // Dispatch auth data to auth slice
       dispatch(setAuth({
         token: response.accessToken,
@@ -88,7 +88,7 @@ export default function RegisterScreen() {
       router.replace("/(auth)/verify-email");
     } catch (err: any) {
       console.error("Registration failed", err);
-      
+
       // Show error toast
       const errorMessage = err?.data?.message || "Registration failed. Please try again.";
       toast.show({
@@ -117,7 +117,7 @@ export default function RegisterScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Center>
-             <VStack space="4xl" className="w-full max-w-[400px] py-20">
+            <VStack space="4xl" className="w-full max-w-[400px] py-20">
               {/* Header Section */}
               <VStack space="xs" className="items-center">
                 <Image
