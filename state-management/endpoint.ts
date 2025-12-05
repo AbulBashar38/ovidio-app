@@ -4,5 +4,6 @@ export const ENDPOINTS = {
     logout: "auth/logout",
     refresh: "auth/token/refresh",
     book_submit: "books/submit",
+    books: "books",
     me: "auth/me",
 } as const

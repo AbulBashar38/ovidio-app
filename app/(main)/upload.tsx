@@ -108,7 +108,7 @@ export default function UploadScreen() {
       });
 
       setFile(null);
-      router.navigate("/(main)/home");
+      router.push("/(main)/home");
 
     } catch (err: any) {
       setIsUploading(false);

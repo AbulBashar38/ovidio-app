@@ -30,18 +30,18 @@ export default function ProfileScreen() {
   const user = useAppSelector(selectUser);
 
   const handleLogout = async () => {
-    
-      // 2. Clear Redux State
-      dispatch(clearAuth());
-      dispatch(clearUser());
-      dispatch(api.util.resetApiState());
 
-      // 3. Purge Persisted Storage
-      await persistor.purge();
+    // 2. Clear Redux State
+    dispatch(clearAuth());
+    dispatch(clearUser());
+    dispatch(api.util.resetApiState());
 
-      // 4. Redirect to Login
-      router.replace("/(auth)/login");
-  
+    // 3. Purge Persisted Storage
+    await persistor.purge();
+
+    // 4. Redirect to Login
+    router.push("/(auth)/login");
+
   };
 
   const menuItems = [
