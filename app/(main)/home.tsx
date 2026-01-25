@@ -2,17 +2,22 @@ import { AllUploadsSection } from "@/components/home/AllUploadsSection";
 import { HomeHeader } from "@/components/home/HomeHeader";
 import { HomeSkeleton } from "@/components/home/HomeSkeleton";
 import { InProgressSection } from "@/components/home/InProgressSection";
+import {
+  LowCreditsWarning,
+  NoCreditsCard,
+} from "@/components/home/NoCreditsCard";
 import { RecentUploadsSection } from "@/components/home/RecentUploadsSection";
 import { Box } from "@/components/ui/box";
 import { VStack } from "@/components/ui/vstack";
+import { useGetUserQuery } from "@/state-management/services/auth/authApi";
 import { useGetBooksQuery } from "@/state-management/services/books/booksApi";
-import React from "react";
 import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
-
   const { data, isLoading, error } = useGetBooksQuery();
+  const { data: userData } = useGetUserQuery();
+  const credits = userData?.user?.creditsRemaining ?? 0;
 
   if (isLoading) {
     return (
@@ -27,7 +32,7 @@ export default function HomeScreen() {
   // Filter for in-progress books (PENDING or PROCESSING)
   const inProgressBooks =
     data?.jobs.filter(
-      (job) => job.status !== "COMPLETED" && job.status !== "FAILED"
+      (job) => job.status !== "COMPLETED" && job.status !== "FAILED",
     ) || [];
 
   const oneMonthAgo = new Date();
@@ -35,10 +40,10 @@ export default function HomeScreen() {
 
   const recentBooks =
     data?.jobs.filter(
-      (job) =>
-        job.status === "COMPLETED" &&
-        job.completedAt &&
-        new Date(job.completedAt) > oneMonthAgo
+      (job) => job.status === "COMPLETED",
+      // && job.completedAt,
+      // &&
+      // new Date(job.completedAt) > oneMonthAgo,
     ) || [];
 
   return (
@@ -51,6 +56,14 @@ export default function HomeScreen() {
         >
           <VStack space="4xl" className="p-6">
             <HomeHeader />
+
+            {/* Show prominent CTA when no credits */}
+            {credits === 0 && <NoCreditsCard variant="full" />}
+
+            {/* Show low credits warning */}
+            {credits > 0 && credits <= 2 && (
+              <LowCreditsWarning credits={credits} />
+            )}
 
             <InProgressSection jobs={inProgressBooks} />
 

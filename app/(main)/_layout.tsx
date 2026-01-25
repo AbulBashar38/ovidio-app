@@ -71,7 +71,12 @@ export default function MainLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="buy-credits"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
-
   );
 }

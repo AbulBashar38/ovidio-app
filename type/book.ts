@@ -1,70 +1,76 @@
 export type JobStatus =
-    | "PENDING"
-    | "QUEUED"
-    | "PROCESSING"
-    | "COMPLETED"
-    | "FAILED";
+  | "PENDING"
+  | "QUEUED"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "FAILED";
 export type JobStep =
-    | "UPLOAD_RECEIVED"
-    | "VALIDATING"
-    | "DOWNLOADING_PDF"
-    | "EXTRACTING_TEXT"
-    | "CLEANING_TEXT"
-    | "GENERATING_AUDIO"
-    | "MIXING_AUDIO"
-    | "UPLOADING_ASSETS"
-    | "FINALIZING"
-    | "COMPLETED"
-    | "ERROR";
+  | "UPLOAD_RECEIVED"
+  | "VALIDATING"
+  | "DOWNLOADING_PDF"
+  | "EXTRACTING_TEXT"
+  | "CLEANING_TEXT"
+  | "GENERATING_AUDIO"
+  | "MIXING_AUDIO"
+  | "UPLOADING_ASSETS"
+  | "FINALIZING"
+  | "COMPLETED"
+  | "ERROR";
 export interface JobEvent {
-    id: string;
-    jobId: string;
-    step: JobStep;
-    status: JobStatus;
-    message: string;
-    progress: number;
-    metadata: Record<string, any>;
-    createdAt: string;
+  id: string;
+  jobId: string;
+  step: JobStep;
+  status: JobStatus;
+  message: string;
+  progress: number;
+  metadata: Record<string, any>;
+  createdAt: string;
 }
 export interface BookSubmitRequest {
-    pdfUrl: string;
-    originalFilename: string;
-    backgroundAudio: boolean;
+  pdfUrl: string;
+  originalFilename: string;
+  backgroundAudio: boolean;
 }
 
 export interface BookSubmitResponse {
-    message: string;
-    bookId?: string;
-    // Add other fields if known
+  message: string;
+  bookId?: string;
+  // Add other fields if known
 }
 
 export interface BookJob {
-    id: string;
-    userId: string;
-    sourcePdfUrl: string;
-    originalFilename: string;
-    totalCharacters: number;
-    estimatedDuration: number | null;
-    status: JobStatus; // e.g. "FAILED", "COMPLETED", "PROCESSING"
-    currentStep: JobStep;
-    errorMessage: string | null;
-    backgroundTrack: string | null;
-    createdAt: string;
-    completedAt?: string;
-    audioFile: any | null;
-    events?: JobEvent[];
+  id: string;
+  userId: string;
+  sourcePdfUrl: string;
+  originalFilename: string;
+  totalCharacters: number;
+  estimatedDuration: number | null;
+  status: JobStatus; // e.g. "FAILED", "COMPLETED", "PROCESSING"
+  currentStep: JobStep;
+  errorMessage: string | null;
+  backgroundTrack: string | null;
+  createdAt: string;
+  completedAt?: string;
+  audioFile: any | null;
+  events?: JobEvent[];
 }
 
 export interface GetBooksResponse {
-    jobs: BookJob[];
+  jobs: BookJob[];
 }
 
 export interface GetBookDetailsResponse {
-    job: BookJob;
+  job: BookJob;
 }
 
 export interface GetBookProgressResponse {
-    status: JobStatus;
-    currentStep: JobStep;
-    events: JobEvent[];
+  status: JobStatus;
+  currentStep: JobStep;
+  events: JobEvent[];
+}
+
+export interface BookAudioResponse {
+  url: string;
+  format: string;
+  backgroundTrack?: string;
 }

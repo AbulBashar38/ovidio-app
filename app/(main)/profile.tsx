@@ -6,13 +6,18 @@ import {
   LogOut,
   Settings,
   Shield,
+  Sparkles,
   User,
 } from "lucide-react-native";
 import React from "react";
 import { Image, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Avatar, AvatarFallbackText, AvatarImage } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallbackText,
+  AvatarImage,
+} from "@/components/ui/avatar";
 import { Box } from "@/components/ui/box";
 import { Divider } from "@/components/ui/divider";
 import { Heading } from "@/components/ui/heading";
@@ -22,15 +27,18 @@ import { VStack } from "@/components/ui/vstack";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
 import { api } from "@/state-management/apiConfig";
 import { clearAuth } from "@/state-management/features/auth/authSlice";
-import { clearUser, selectUser } from "@/state-management/features/auth/userSlice";
+import {
+  clearUser,
+  selectUser,
+} from "@/state-management/features/auth/userSlice";
 import { persistor } from "@/state-management/store";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function ProfileScreen() {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
 
   const handleLogout = async () => {
-
     // 2. Clear Redux State
     dispatch(clearAuth());
     dispatch(clearUser());
@@ -41,13 +49,12 @@ export default function ProfileScreen() {
 
     // 4. Redirect to Login
     router.replace("/(auth)/login");
-
   };
 
   const menuItems = [
     { icon: User, label: "Account Details", route: "/(main)/account-details" },
+    { icon: CreditCard, label: "Buy Credits", route: "/(main)/buy-credits" },
     { icon: Bell, label: "Notifications" },
-    { icon: CreditCard, label: "Subscription" },
     { icon: Shield, label: "Privacy & Security" },
     { icon: Settings, label: "App Settings" },
   ];
@@ -69,7 +76,9 @@ export default function ProfileScreen() {
             <HStack space="md" className="items-center">
               <Avatar size="xl" className="bg-primary-500">
                 <AvatarFallbackText className="text-white">
-                  {user.firstName ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ""}` : "JD"}
+                  {user.firstName
+                    ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ""}`
+                    : "JD"}
                 </AvatarFallbackText>
                 <AvatarImage
                   source={{ uri: user.profilePhotoUrl }}
@@ -81,9 +90,7 @@ export default function ProfileScreen() {
                 <Heading size="md" className="text-typography-900">
                   {user.firstName} {user.lastName}
                 </Heading>
-                <Text className="text-typography-500">
-                  {user.email}
-                </Text>
+                <Text className="text-typography-500">{user.email}</Text>
                 <Box className="bg-primary-500/10 self-start px-2 py-1 rounded-md mt-1">
                   <Text className="text-primary-500 text-xs font-bold">
                     {user.role}
@@ -91,6 +98,45 @@ export default function ProfileScreen() {
                 </Box>
               </VStack>
             </HStack>
+
+            {/* Credits Card */}
+            <TouchableOpacity
+              onPress={() => router.push("/(main)/buy-credits")}
+              activeOpacity={0.9}
+            >
+              <Box className="rounded-2xl overflow-hidden">
+                <LinearGradient
+                  colors={["#3B82F6", "#1D4ED8"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ padding: 20 }}
+                >
+                  <HStack className="items-center justify-between">
+                    <VStack space="xs">
+                      <Text className="text-white/80 text-sm font-medium">
+                        Your Credits
+                      </Text>
+                      <HStack space="xs" className="items-baseline">
+                        <Text className="text-white text-4xl font-bold">
+                          {user.creditsRemaining}
+                        </Text>
+                        <Text className="text-white/70 text-base">
+                          remaining
+                        </Text>
+                      </HStack>
+                    </VStack>
+                    <Box className="bg-white/20 rounded-xl px-4 py-2">
+                      <HStack space="xs" className="items-center">
+                        <Sparkles size={16} color="white" />
+                        <Text className="text-white font-bold text-sm">
+                          Buy More
+                        </Text>
+                      </HStack>
+                    </Box>
+                  </HStack>
+                </LinearGradient>
+              </Box>
+            </TouchableOpacity>
 
             {/* Menu */}
             <VStack space="lg">
@@ -103,7 +149,9 @@ export default function ProfileScreen() {
                     {index > 0 && <Divider className="bg-outline-100" />}
                     <TouchableOpacity
                       className="p-4 flex-row items-center active:bg-background-100"
-                      onPress={() => item.route && router.push(item.route as any)}
+                      onPress={() =>
+                        item.route && router.push(item.route as any)
+                      }
                     >
                       <Box className="w-10 h-10 bg-background-200 rounded-full items-center justify-center mr-4">
                         <item.icon size={20} className="text-typography-900" />

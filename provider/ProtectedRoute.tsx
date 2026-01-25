@@ -1,6 +1,10 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxHooks";
+import { useRevenueCat } from "@/hooks/useRevenueCat";
 import { selectAuth } from "@/state-management/features/auth/authSlice";
-import { selectUser, setUser } from "@/state-management/features/auth/userSlice";
+import {
+  selectUser,
+  setUser,
+} from "@/state-management/features/auth/userSlice";
 import { useGetUserQuery } from "@/state-management/services/auth/authApi";
 import { router, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
@@ -18,10 +22,16 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [isMounted, setIsMounted] = useState(false);
   const dispatch = useAppDispatch();
 
+  // Initialize RevenueCat for in-app purchases
+  useRevenueCat();
+
   // Fetch user data if we have a token but no user ID
-  const { data: userData, isLoading: isUserLoading } = useGetUserQuery(undefined, {
-    skip: !token || !!user.id,
-  });
+  const { data: userData, isLoading: isUserLoading } = useGetUserQuery(
+    undefined,
+    {
+      skip: !token || !!user.id,
+    },
+  );
 
   useEffect(() => {
     if (userData?.user) {
@@ -64,7 +74,14 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (!isMounted || (token && !user.id && isUserLoading)) {
     // While checking, redirecting, or fetching user data, show nothing or a spinner
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#181719" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#181719",
+        }}
+      >
         <ActivityIndicator size="large" color="#ffffff" />
       </View>
     );

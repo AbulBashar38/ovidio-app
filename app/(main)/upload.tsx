@@ -1,3 +1,4 @@
+import { useGetUserQuery } from "@/state-management/services/auth/authApi";
 import { useSubmitBookMutation } from "@/state-management/services/books/booksApi";
 import { uploadToS3 } from "@/state-management/services/s3Upload";
 
@@ -6,11 +7,13 @@ import { router } from "expo-router";
 import {
   AlertCircle,
   CheckCircle,
+  CreditCard,
   FileText,
+  Sparkles,
   UploadCloud,
   X,
 } from "lucide-react-native";
-import React, { useState } from "react";
+import { useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -27,13 +30,18 @@ import {
   useToast,
 } from "@/components/ui/toast";
 import { VStack } from "@/components/ui/vstack";
+import { LinearGradient } from "expo-linear-gradient";
+import { MotiView } from "moti";
 
 export default function UploadScreen() {
   const [file, setFile] = useState<DocumentPicker.DocumentPickerAsset | null>(
-    null
+    null,
   );
   const [isUploading, setIsUploading] = useState(false);
   const toast = useToast();
+
+  const { data: userData } = useGetUserQuery();
+  const credits = userData?.user?.creditsRemaining ?? 0;
 
   const [submitBook, { isLoading: isSubmitting }] = useSubmitBookMutation();
 
@@ -76,8 +84,12 @@ export default function UploadScreen() {
         render: ({ id }) => (
           <Toast nativeID={"toast-" + id} action="error" variant="solid">
             <VStack space="xs">
-              <ToastTitle className="text-white font-bold">Upload Failed</ToastTitle>
-              <ToastDescription className="text-white">{s3Result.error}</ToastDescription>
+              <ToastTitle className="text-white font-bold">
+                Upload Failed
+              </ToastTitle>
+              <ToastDescription className="text-white">
+                {s3Result.error}
+              </ToastDescription>
             </VStack>
           </Toast>
         ),
@@ -98,10 +110,19 @@ export default function UploadScreen() {
       toast.show({
         placement: "top",
         render: ({ id }) => (
-          <Toast nativeID={"toast-" + id} action="success" variant="outline" className="bg-background-0 border-success-500">
+          <Toast
+            nativeID={"toast-" + id}
+            action="success"
+            variant="outline"
+            className="bg-background-0 border-success-500"
+          >
             <VStack space="xs">
-              <ToastTitle className="text-success-500 font-bold">Success!</ToastTitle>
-              <ToastDescription className="text-typography-500">Book submitted for processing.</ToastDescription>
+              <ToastTitle className="text-success-500 font-bold">
+                Success!
+              </ToastTitle>
+              <ToastDescription className="text-typography-500">
+                Book submitted for processing.
+              </ToastDescription>
             </VStack>
           </Toast>
         ),
@@ -109,7 +130,6 @@ export default function UploadScreen() {
 
       setFile(null);
       router.push("/(main)/home");
-
     } catch (err: any) {
       setIsUploading(false);
       console.error("Book submission failed", err);
@@ -118,8 +138,12 @@ export default function UploadScreen() {
         render: ({ id }) => (
           <Toast nativeID={"toast-" + id} action="error" variant="solid">
             <VStack space="xs">
-              <ToastTitle className="text-white font-bold">Submission Failed</ToastTitle>
-              <ToastDescription className="text-white">{err?.data?.message || "Failed to submit book."}</ToastDescription>
+              <ToastTitle className="text-white font-bold">
+                Submission Failed
+              </ToastTitle>
+              <ToastDescription className="text-white">
+                {err?.data?.message || "Failed to submit book."}
+              </ToastDescription>
             </VStack>
           </Toast>
         ),
@@ -151,7 +175,62 @@ export default function UploadScreen() {
 
           {/* Upload Area */}
           <Center className="flex-1">
-            {!file ? (
+            {/* No Credits State */}
+            {credits === 0 ? (
+              <MotiView
+                from={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", damping: 20 }}
+                className="w-full"
+              >
+                <VStack space="xl" className="items-center">
+                  <Box className="w-24 h-24 bg-primary-500/10 rounded-full items-center justify-center">
+                    <CreditCard size={48} className="text-primary-500" />
+                  </Box>
+
+                  <VStack space="sm" className="items-center">
+                    <Heading
+                      size="xl"
+                      className="text-typography-900 text-center"
+                    >
+                      No Credits Available
+                    </Heading>
+                    <Text className="text-typography-500 text-center text-base max-w-[280px]">
+                      You need at least 1 credit to convert a book to audio.
+                    </Text>
+                  </VStack>
+
+                  <TouchableOpacity
+                    onPress={() => router.push("/(main)/buy-credits")}
+                    activeOpacity={0.9}
+                    className="w-full"
+                  >
+                    <Box className="rounded-2xl overflow-hidden">
+                      <LinearGradient
+                        colors={["#3B82F6", "#1D4ED8"]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={{ padding: 16 }}
+                      >
+                        <HStack
+                          className="items-center justify-center"
+                          space="sm"
+                        >
+                          <Sparkles size={20} color="white" />
+                          <Text className="text-white font-bold text-lg">
+                            Get Credits
+                          </Text>
+                        </HStack>
+                      </LinearGradient>
+                    </Box>
+                  </TouchableOpacity>
+
+                  <Text className="text-typography-400 text-xs text-center">
+                    Starting from $2.99 • No subscription required
+                  </Text>
+                </VStack>
+              </MotiView>
+            ) : !file ? (
               <TouchableOpacity
                 onPress={pickDocument}
                 activeOpacity={0.8}
@@ -215,13 +294,27 @@ export default function UploadScreen() {
             )}
           </Center>
 
+          {/* Credits Balance Display */}
+          {credits > 0 && (
+            <HStack className="items-center justify-center" space="xs">
+              <Box className="bg-primary-500/10 px-3 py-1.5 rounded-full">
+                <HStack space="xs" className="items-center">
+                  <CreditCard size={14} className="text-primary-500" />
+                  <Text className="text-primary-500 text-sm font-bold">
+                    {credits} Credit{credits !== 1 ? "s" : ""} Available
+                  </Text>
+                </HStack>
+              </Box>
+            </HStack>
+          )}
+
           {/* Footer Actions */}
           <VStack space="md" className="mb-4">
             <Button
               size="xl"
               className="bg-primary-500 hover:bg-primary-600 active:bg-primary-700 rounded-full h-14 shadow-soft-1"
               onPress={handleUpload}
-              isDisabled={!file || isUploading}
+              isDisabled={!file || isUploading || credits === 0}
             >
               {isUploading ? (
                 <ButtonSpinner color="#FFFFFF" />
