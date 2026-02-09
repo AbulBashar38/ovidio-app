@@ -6,15 +6,19 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { BookOpen, Sparkles, Zap } from "lucide-react-native";
+import { BookOpen, Sparkles, X, Zap } from "lucide-react-native";
 import { MotiView } from "moti";
 import { TouchableOpacity } from "react-native";
 
 interface NoCreditsCardProps {
   variant?: "banner" | "full";
+  onClose?: () => void;
 }
 
-export function NoCreditsCard({ variant = "banner" }: NoCreditsCardProps) {
+export function NoCreditsCard({
+  variant = "banner",
+  onClose,
+}: NoCreditsCardProps) {
   const handleBuyCredits = () => {
     router.push("/(main)/buy-credits");
   };
@@ -26,7 +30,16 @@ export function NoCreditsCard({ variant = "banner" }: NoCreditsCardProps) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", damping: 20 }}
       >
-        <Box className="bg-background-50 rounded-3xl p-6 border border-outline-100">
+        <Box className="bg-background-50 rounded-3xl p-6 border border-outline-100 relative">
+          {onClose && (
+            <TouchableOpacity
+              onPress={onClose}
+              className="absolute right-4 top-4 w-8 h-8 items-center justify-center rounded-full bg-background-100"
+              activeOpacity={0.8}
+            >
+              <X size={16} className="text-typography-500" />
+            </TouchableOpacity>
+          )}
           <VStack space="xl" className="items-center">
             {/* Icon */}
             <MotiView

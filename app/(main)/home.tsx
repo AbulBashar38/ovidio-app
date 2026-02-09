@@ -11,6 +11,7 @@ import { Box } from "@/components/ui/box";
 import { VStack } from "@/components/ui/vstack";
 import { useGetUserQuery } from "@/state-management/services/auth/authApi";
 import { useGetBooksQuery } from "@/state-management/services/books/booksApi";
+import { useEffect, useRef, useState } from "react";
 import { ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -18,6 +19,21 @@ export default function HomeScreen() {
   const { data, isLoading, error } = useGetBooksQuery();
   const { data: userData } = useGetUserQuery();
   const credits = userData?.user?.creditsRemaining ?? 0;
+  const [showNoCreditsPopup, setShowNoCreditsPopup] = useState(false);
+  const hasShownNoCreditsRef = useRef(false);
+
+  useEffect(() => {
+    if (credits === 0 && !hasShownNoCreditsRef.current) {
+      setShowNoCreditsPopup(true);
+      hasShownNoCreditsRef.current = true;
+      return;
+    }
+
+    if (credits > 0) {
+      setShowNoCreditsPopup(false);
+      hasShownNoCreditsRef.current = false;
+    }
+  }, [credits]);
 
   if (isLoading) {
     return (
@@ -58,7 +74,12 @@ export default function HomeScreen() {
             <HomeHeader />
 
             {/* Show prominent CTA when no credits */}
-            {credits === 0 && <NoCreditsCard variant="full" />}
+            {credits === 0 && showNoCreditsPopup && (
+              <NoCreditsCard
+                variant="full"
+                onClose={() => setShowNoCreditsPopup(false)}
+              />
+            )}
 
             {/* Show low credits warning */}
             {credits > 0 && credits <= 2 && (
