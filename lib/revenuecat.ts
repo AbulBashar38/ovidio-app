@@ -7,17 +7,16 @@ import Purchases, {
 
 // RevenueCat API Keys - Replace with your actual keys
 const REVENUECAT_IOS_KEY = "appl_YOUR_IOS_KEY";
-const REVENUECAT_ANDROID_KEY = "goog_YOUR_ANDROID_KEY";
+const REVENUECAT_ANDROID_KEY = "goog_MvxyjHlpFbhQWOXLtwMMXPZWEvl";
 
-// Credit package mapping - maps RevenueCat product IDs to credits
-export const CREDIT_PACKAGES: Record<
+// Plan display order and popular flag by package identifier
+export const PLAN_DISPLAY_CONFIG: Record<
   string,
-  { credits: number; label: string; popular?: boolean }
+  { popular?: boolean; order: number }
 > = {
-  credits_1: { credits: 1, label: "1 Book" },
-  credits_5: { credits: 5, label: "5 Books", popular: true },
-  credits_10: { credits: 10, label: "10 Books" },
-  credits_25: { credits: 25, label: "25 Books" },
+  silver: { order: 1 },
+  gold: { popular: true, order: 2 },
+  platinum: { order: 3 },
 };
 
 class RevenueCatService {
@@ -37,7 +36,7 @@ class RevenueCatService {
       }
 
       this.initialized = true;
-      console.log("✅ RevenueCat initialized");
+      // console.log("✅ RevenueCat initialized");
     } catch (error) {
       console.error("❌ RevenueCat initialization failed:", error);
       throw error;
@@ -47,6 +46,8 @@ class RevenueCatService {
   async getOfferings(): Promise<PurchasesOffering | null> {
     try {
       const offerings = await Purchases.getOfferings();
+      // console.log(offerings);
+
       return offerings.current;
     } catch (error) {
       console.error("❌ Failed to get offerings:", error);
@@ -57,14 +58,14 @@ class RevenueCatService {
   async purchasePackage(pkg: PurchasesPackage): Promise<CustomerInfo | null> {
     try {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
-      console.log("✅ Purchase successful:", customerInfo);
+      // console.log("✅ Purchase successful:", customerInfo);
       return customerInfo;
     } catch (error: any) {
       if (error.userCancelled) {
-        console.log("⚠️ User cancelled purchase");
+        // console.log("⚠️ User cancelled purchase");
         return null;
       }
-      console.error("❌ Purchase failed:", error);
+      // console.error("❌ Purchase failed:", error);
       throw error;
     }
   }
@@ -73,7 +74,7 @@ class RevenueCatService {
     try {
       return await Purchases.getCustomerInfo();
     } catch (error) {
-      console.error("❌ Failed to get customer info:", error);
+      // console.error("❌ Failed to get customer info:", error);
       return null;
     }
   }
@@ -81,10 +82,10 @@ class RevenueCatService {
   async restorePurchases(): Promise<CustomerInfo | null> {
     try {
       const customerInfo = await Purchases.restorePurchases();
-      console.log("✅ Purchases restored:", customerInfo);
+      // console.log("✅ Purchases restored:", customerInfo);
       return customerInfo;
     } catch (error) {
-      console.error("❌ Restore failed:", error);
+      // console.error("❌ Restore failed:", error);
       throw error;
     }
   }
@@ -92,18 +93,18 @@ class RevenueCatService {
   async logIn(userId: string): Promise<void> {
     try {
       await Purchases.logIn(userId);
-      console.log("✅ RevenueCat user logged in:", userId);
+      // console.log("✅ RevenueCat user logged in:", userId);
     } catch (error) {
-      console.error("❌ RevenueCat login failed:", error);
+      // console.error("❌ RevenueCat login failed:", error);
     }
   }
 
   async logOut(): Promise<void> {
     try {
       await Purchases.logOut();
-      console.log("✅ RevenueCat user logged out");
+      // console.log("✅ RevenueCat user logged out");
     } catch (error) {
-      console.error("❌ RevenueCat logout failed:", error);
+      // console.error("❌ RevenueCat logout failed:", error);
     }
   }
 }

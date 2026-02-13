@@ -11,9 +11,15 @@ import {
 } from "@/components/ui/toast";
 import { VStack } from "@/components/ui/vstack";
 import { useAppSelector } from "@/hooks/reduxHooks";
-import { CREDIT_PACKAGES, revenueCatService } from "@/lib/revenuecat";
+import { PLAN_DISPLAY_CONFIG, revenueCatService } from "@/lib/revenuecat";
 import { selectUser } from "@/state-management/features/auth/userSlice";
 import { useGetUserQuery } from "@/state-management/services/auth/authApi";
+import {
+  useCheckRevenueCatSubscriptionQuery,
+  useGetPlansQuery,
+  useGetRevenueCatActiveSubscriptionsQuery,
+  useGetRevenueCatSubscriberQuery,
+} from "@/state-management/services/billing/billingApi";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, router } from "expo-router";
 import {
@@ -35,18 +41,21 @@ import {
 import { PurchasesPackage } from "react-native-purchases";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-interface CreditPackageCard {
+interface SubscriptionPlanCard {
   id: string;
-  credits: number;
-  price: string;
-  pricePerCredit: string;
   label: string;
+  tier: string;
+  price: string;
+  period: string;
+  description: string;
+  booksIncluded: number;
   popular?: boolean;
+  order: number;
   package?: PurchasesPackage;
 }
 
 export default function BuyCreditsScreen() {
-  const [packages, setPackages] = useState<CreditPackageCard[]>([]);
+  const [packages, setPackages] = useState<SubscriptionPlanCard[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
@@ -54,6 +63,46 @@ export default function BuyCreditsScreen() {
   const toast = useToast();
   const { refetch: refetchUser } = useGetUserQuery();
   const user = useAppSelector(selectUser);
+
+  // Fetch plans from API
+  const {
+    data: plansData,
+    isLoading: isPlansLoading,
+    refetch: refetchPlans,
+  } = useGetPlansQuery();
+
+  // RevenueCat API queries
+  const { data: subscriberData, error: subscriberError } =
+    useGetRevenueCatSubscriberQuery();
+  const { data: subscriptionCheck, error: subscriptionCheckError } =
+    useCheckRevenueCatSubscriptionQuery();
+  const { data: activeSubscriptions, error: activeSubscriptionsError } =
+    useGetRevenueCatActiveSubscriptionsQuery();
+
+  // Console log RevenueCat API results
+  useEffect(() => {
+    console.log("=== RevenueCat API Results ===");
+    console.log("Subscriber Data:", JSON.stringify(subscriberData, null, 2));
+    console.log("Subscriber Error:", subscriberError);
+    console.log(
+      "Subscription Check:",
+      JSON.stringify(subscriptionCheck, null, 2),
+    );
+    console.log("Subscription Check Error:", subscriptionCheckError);
+    console.log(
+      "Active Subscriptions:",
+      JSON.stringify(activeSubscriptions, null, 2),
+    );
+    console.log("Active Subscriptions Error:", activeSubscriptionsError);
+    console.log("==============================");
+  }, [
+    subscriberData,
+    subscriberError,
+    subscriptionCheck,
+    subscriptionCheckError,
+    activeSubscriptions,
+    activeSubscriptionsError,
+  ]);
 
   const loadOfferings = async () => {
     try {
@@ -65,72 +114,52 @@ export default function BuyCreditsScreen() {
       }
 
       const offering = await revenueCatService.getOfferings();
+      console.log("RevenueCat Offering:", JSON.stringify(offering, null, 2));
 
-      if (offering?.availablePackages) {
-        const mappedPackages: CreditPackageCard[] = offering.availablePackages
-          .map((pkg) => {
-            const productId = pkg.product.identifier;
-            const creditInfo = CREDIT_PACKAGES[productId];
+      if (offering?.availablePackages && plansData?.plans) {
+        const mappedPackages: SubscriptionPlanCard[] =
+          offering.availablePackages
+            .map((pkg) => {
+              const packageId = pkg.identifier; // "silver", "gold", "platinum"
+              const apiPlan = plansData.plans.find((p) => p.id === packageId);
+              const displayConfig = PLAN_DISPLAY_CONFIG[packageId];
 
-            if (!creditInfo) return null;
+              if (!apiPlan || !displayConfig) {
+                console.log(
+                  "No matching API plan or display config for:",
+                  packageId,
+                );
+                return null;
+              }
 
-            const price = pkg.product.priceString;
-            const priceValue = pkg.product.price;
-            const pricePerCredit = (priceValue / creditInfo.credits).toFixed(2);
+              const price = pkg.product.priceString;
+              const period =
+                pkg.product.subscriptionPeriod === "P1M" ? "/mo" : "";
 
-            return {
-              id: productId,
-              credits: creditInfo.credits,
-              price,
-              pricePerCredit: `$${pricePerCredit}/book`,
-              label: creditInfo.label,
-              popular: creditInfo.popular,
-              package: pkg,
-            };
-          })
-          .filter(Boolean) as CreditPackageCard[];
+              return {
+                id: packageId,
+                label: apiPlan.name,
+                tier: packageId,
+                price,
+                period,
+                description: apiPlan.description || "",
+                booksIncluded: apiPlan.booksIncluded,
+                popular: displayConfig.popular,
+                order: displayConfig.order,
+                package: pkg,
+              };
+            })
+            .filter(Boolean) as SubscriptionPlanCard[];
 
-        setPackages(mappedPackages.sort((a, b) => a.credits - b.credits));
+        setPackages(mappedPackages.sort((a, b) => a.order - b.order));
 
         // Auto-select popular package
         const popular = mappedPackages.find((p) => p.popular);
         if (popular) {
           setSelectedPackage(popular.id);
+        } else if (mappedPackages.length > 0) {
+          setSelectedPackage(mappedPackages[0].id);
         }
-      } else {
-        // Fallback mock packages for development
-        setPackages([
-          {
-            id: "credits_1",
-            credits: 1,
-            price: "$2.99",
-            pricePerCredit: "$2.99/book",
-            label: "1 Book",
-          },
-          {
-            id: "credits_5",
-            credits: 5,
-            price: "$9.99",
-            pricePerCredit: "$2.00/book",
-            label: "5 Books",
-            popular: true,
-          },
-          {
-            id: "credits_10",
-            credits: 10,
-            price: "$14.99",
-            pricePerCredit: "$1.50/book",
-            label: "10 Books",
-          },
-          {
-            id: "credits_25",
-            credits: 25,
-            price: "$29.99",
-            pricePerCredit: "$1.20/book",
-            label: "25 Books",
-          },
-        ]);
-        setSelectedPackage("credits_5");
       }
     } catch (error) {
       console.error("Failed to load offerings:", error);
@@ -152,20 +181,21 @@ export default function BuyCreditsScreen() {
   };
 
   useEffect(() => {
-    loadOfferings();
-  }, [user.id]);
+    if (!isPlansLoading) {
+      loadOfferings();
+    }
+  }, [user.id, plansData, isPlansLoading]);
 
   const handlePurchase = async () => {
     const selected = packages.find((p) => p.id === selectedPackage);
     if (!selected?.package) {
-      // Mock purchase for development
       toast.show({
         placement: "top",
         render: ({ id }) => (
           <Toast nativeID={id} action="info" variant="solid">
-            <ToastTitle>Development Mode</ToastTitle>
+            <ToastTitle>No Package Selected</ToastTitle>
             <ToastDescription>
-              RevenueCat not configured. This is a mock purchase.
+              Please select a plan to continue.
             </ToastDescription>
           </Toast>
         ),
@@ -176,18 +206,19 @@ export default function BuyCreditsScreen() {
     try {
       setIsPurchasing(true);
       const result = await revenueCatService.purchasePackage(selected.package);
+      console.log("Purchase result:", result);
 
       if (result) {
-        // Refresh user to get updated credits
+        // Refresh user to get updated subscription
         await refetchUser();
 
         toast.show({
           placement: "top",
           render: ({ id }) => (
             <Toast nativeID={id} action="success" variant="solid">
-              <ToastTitle>Purchase Successful! 🎉</ToastTitle>
+              <ToastTitle>Purchase Successful!</ToastTitle>
               <ToastDescription>
-                {selected.credits} credits have been added to your account.
+                You are now subscribed to the {selected.label} plan.
               </ToastDescription>
             </Toast>
           ),
@@ -268,7 +299,13 @@ export default function BuyCreditsScreen() {
           contentContainerStyle={{ paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={loadOfferings} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                refetchPlans();
+                loadOfferings();
+              }}
+            />
           }
         >
           {/* Header */}
@@ -300,10 +337,10 @@ export default function BuyCreditsScreen() {
                     size="2xl"
                     className="text-typography-900 text-center"
                   >
-                    Get More Credits
+                    Choose Your Plan
                   </Heading>
                   <Text className="text-typography-500 text-center text-base max-w-[280px]">
-                    Convert your books to immersive audio experiences
+                    Subscribe to convert your books into immersive audio
                   </Text>
                 </VStack>
 
@@ -335,7 +372,7 @@ export default function BuyCreditsScreen() {
           {/* Packages */}
           <VStack className="px-6" space="md">
             <Text className="text-typography-500 font-medium text-sm uppercase tracking-wider">
-              Choose a Package
+              Choose a Plan
             </Text>
 
             <VStack space="sm">
@@ -415,7 +452,7 @@ export default function BuyCreditsScreen() {
                             {pkg.label}
                           </Text>
                           <Text className="text-typography-500 text-sm">
-                            {pkg.pricePerCredit}
+                            {pkg.booksIncluded} books/month
                           </Text>
                         </VStack>
 
@@ -424,6 +461,11 @@ export default function BuyCreditsScreen() {
                           <Text className="text-typography-900 font-bold text-xl">
                             {pkg.price}
                           </Text>
+                          {pkg.period ? (
+                            <Text className="text-typography-500 text-xs">
+                              {pkg.period}
+                            </Text>
+                          ) : null}
                         </VStack>
                       </HStack>
                     </Box>
@@ -470,13 +512,15 @@ export default function BuyCreditsScreen() {
               <ButtonSpinner color="white" />
             ) : (
               <ButtonText className="font-bold text-lg">
-                Buy {selectedPkg?.credits || 0} Credits for{" "}
+                Subscribe
+                {/* to {selectedPkg?.label || "Plan"} for{" "}
                 {selectedPkg?.price || "$0"}
+                {selectedPkg?.period || ""} */}
               </ButtonText>
             )}
           </Button>
           <Text className="text-typography-400 text-xs text-center mt-3">
-            One-time purchase • No subscription required
+            Cancel anytime from your device settings
           </Text>
         </Box>
       </SafeAreaView>
