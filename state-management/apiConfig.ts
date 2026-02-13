@@ -23,7 +23,7 @@ interface RootState {
 const mutex = new Mutex();
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://147.93.107.185:3007/api",
+  baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL,
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.token;
 

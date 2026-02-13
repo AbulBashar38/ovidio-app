@@ -5,9 +5,9 @@ import Purchases, {
   PurchasesPackage,
 } from "react-native-purchases";
 
-// RevenueCat API Keys - Replace with your actual keys
-const REVENUECAT_IOS_KEY = "appl_YOUR_IOS_KEY";
-const REVENUECAT_ANDROID_KEY = "goog_MvxyjHlpFbhQWOXLtwMMXPZWEvl";
+const REVENUECAT_IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || "";
+const REVENUECAT_ANDROID_KEY =
+  process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || "";
 
 // Plan display order and popular flag by package identifier
 export const PLAN_DISPLAY_CONFIG: Record<
