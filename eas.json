@@ -9,10 +9,18 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "autoIncrement": true,
+      "env": {
+        "EAS_BUILD_PREVIEW": "true",
+        "EXPO_PUBLIC_API_BASE_URL": "https://api-dev.ovidio.app/"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.ovidio.app/"
+      }
     }
   },
   "submit": {
