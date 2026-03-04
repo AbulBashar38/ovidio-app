@@ -30,6 +30,8 @@
     }
   },
   "submit": {
+    "development": {},
+    "preview": {},
     "production": {}
   }
 }
