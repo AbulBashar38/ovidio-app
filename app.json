@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ovidio-app",
+    "name": "ovidio",
     "slug": "ovidio-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -22,9 +22,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "blockedPermissions": [
-        "android.permission.RECORD_AUDIO"
-      ],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"],
       "package": "com.abulbasar.ovidioapp"
     },
     "web": {
