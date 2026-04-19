@@ -13,7 +13,6 @@ import {
 import { api } from "./apiConfig";
 import authReducer from "./features/auth/authSlice";
 import userReducer from "./features/auth/userSlice";
-import counterReducer from "./features/count/counterSlice";
 
 // Persist configuration for auth slice
 const authPersistConfig = {
@@ -26,7 +25,6 @@ const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 export const store = configureStore({
   reducer: {
     [api.reducerPath]: api.reducer,
-    counter: counterReducer,
     auth: persistedAuthReducer,
     user: userReducer,
   },

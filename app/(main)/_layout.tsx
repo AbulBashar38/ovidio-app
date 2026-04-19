@@ -60,12 +60,6 @@ export default function MainLayout() {
         }}
       />
       <Tabs.Screen
-        name="library"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="account-details"
         options={{
           href: null,
