@@ -3,7 +3,7 @@ import { Link, router } from "expo-router";
 import { AlertCircle, Eye, EyeOff } from "lucide-react-native";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Image, Keyboard } from "react-native";
+import { Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { z } from "zod";
 
 import { Box } from "@/components/ui/box";
@@ -26,6 +26,9 @@ import { useAppDispatch } from "@/hooks/reduxHooks";
 import { setAuth } from "@/state-management/features/auth/authSlice";
 import { setUser } from "@/state-management/features/auth/userSlice";
 import { useLoginMutation } from "@/state-management/services/auth/authApi";
+import { LinearGradient } from "expo-linear-gradient";
+import { MotiView } from "moti";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const loginSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
@@ -89,149 +92,191 @@ export default function LoginScreen() {
   };
 
   return (
-    <Box className="flex-1 bg-background-0 p-6 justify-center">
-      <Center className="flex-1">
-        <VStack space="4xl" className="w-full max-w-[400px]">
-          {/* Header Section */}
-          <VStack space="xs" className="items-center">
-            <Image
-              source={require("@/assets/logos/ovidio_logo.png")}
-              className="w-24 h-24 mb-2"
-              resizeMode="contain"
-            />
-            <Heading
-              size="3xl"
-              className="text-typography-900 tracking-tight text-center"
-            >
-              Welcome Back
-            </Heading>
-            <Text className="text-typography-500 text-center leading-relaxed">
-              Sign in to continue your audio journey with Ovidio
-            </Text>
-          </VStack>
+    <Box className="flex-1 bg-background-950">
+      <LinearGradient
+        colors={["#0f1115", "#181719", "#0b0c0f"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+      />
+      <MotiView
+        from={{ opacity: 0.2, scale: 0.95 }}
+        animate={{ opacity: 0.35, scale: 1.05 }}
+        transition={{ loop: true, type: "timing", duration: 5000 }}
+        style={{
+          position: "absolute",
+          width: 260,
+          height: 260,
+          borderRadius: 130,
+          top: -40,
+          right: -80,
+          backgroundColor: "rgba(59,130,246,0.22)",
+        }}
+      />
+      <MotiView
+        from={{ opacity: 0.18, translateX: -10 }}
+        animate={{ opacity: 0.28, translateX: 18 }}
+        transition={{ loop: true, type: "timing", duration: 4200 }}
+        style={{
+          position: "absolute",
+          width: 220,
+          height: 220,
+          borderRadius: 110,
+          bottom: 70,
+          left: -60,
+          backgroundColor: "rgba(99,102,241,0.20)",
+        }}
+      />
 
-          {/* Form Section */}
-          <VStack space="xl">
-            {/* Email Field */}
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <FormControl isInvalid={!!errors.email} size="lg">
-                  <FormControlLabel className="mb-2">
-                    <FormControlLabelText className="text-typography-500 font-medium">
-                      Email Address
-                    </FormControlLabelText>
-                  </FormControlLabel>
-                  <Input
-                    size="xl"
-                    variant="outline"
-                    className="border-outline-100 focus:border-primary-500 bg-background-50 h-14 rounded-xl"
-                  >
-                    <InputField
-                      placeholder="name@example.com"
-                      placeholderTextColor="#737373"
-                      className="text-typography-900 text-base font-body"
-                      autoCapitalize="none"
-                      keyboardType="email-address"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
+      <SafeAreaView className="flex-1">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1"
+        >
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+            showsVerticalScrollIndicator={false}
+          >
+            <Box className="px-6 py-8">
+              <Center>
+                <VStack space="3xl" className="w-full max-w-[420px]">
+                  <VStack space="sm" className="items-center">
+                    <Image
+                      source={require("@/assets/logos/ovidio_logo.png")}
+                      className="w-20 h-20"
+                      resizeMode="contain"
                     />
-                  </Input>
-                  <FormControlError>
-                    <FormControlErrorIcon as={AlertCircle} />
-                    <FormControlErrorText className="text-error-500">
-                      {errors.email?.message}
-                    </FormControlErrorText>
-                  </FormControlError>
-                </FormControl>
-              )}
-            />
-
-            {/* Password Field */}
-            <Controller
-              control={control}
-              name="password"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <FormControl isInvalid={!!errors.password} size="lg">
-                  <FormControlLabel className="mb-2">
-                    <FormControlLabelText className="text-typography-500 font-medium">
-                      Password
-                    </FormControlLabelText>
-                  </FormControlLabel>
-                  <Input
-                    size="xl"
-                    variant="outline"
-                    className="border-outline-100 focus:border-primary-500 bg-background-50 h-14 rounded-xl"
-                  >
-                    <InputField
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      placeholderTextColor="#737373"
-                      className="text-typography-900 text-base font-body"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                    />
-                    <InputSlot
-                      className="pr-4"
-                      onPress={() => setShowPassword(!showPassword)}
+                    <Heading
+                      size="3xl"
+                      className="text-typography-900 tracking-tight text-center"
                     >
-                      <InputIcon
-                        as={showPassword ? Eye : EyeOff}
-                        className="text-typography-400"
+                      Welcome back
+                    </Heading>
+                    <Text className="text-typography-600 text-center leading-relaxed max-w-[300px]">
+                      Continue your audiobook journey with a clean and focused sign-in
+                      experience.
+                    </Text>
+                  </VStack>
+
+                  <Box className="rounded-3xl border border-outline-300 bg-background-50 px-5 py-6">
+                    <VStack space="xl">
+                      <Controller
+                        control={control}
+                        name="email"
+                        render={({ field: { onChange, onBlur, value } }) => (
+                          <FormControl isInvalid={!!errors.email} size="lg">
+                            <FormControlLabel className="mb-2">
+                              <FormControlLabelText className="text-typography-700 font-medium">
+                                Email Address
+                              </FormControlLabelText>
+                            </FormControlLabel>
+                            <Input
+                              size="xl"
+                              variant="outline"
+                              className="border-outline-400 focus:border-primary-500 bg-background-100 h-14 rounded-2xl"
+                            >
+                              <InputField
+                                placeholder="name@example.com"
+                                placeholderTextColor="#737373"
+                                className="text-typography-900 text-base"
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                value={value}
+                                onChangeText={onChange}
+                                onBlur={onBlur}
+                              />
+                            </Input>
+                            <FormControlError>
+                              <FormControlErrorIcon as={AlertCircle} />
+                              <FormControlErrorText className="text-error-400">
+                                {errors.email?.message}
+                              </FormControlErrorText>
+                            </FormControlError>
+                          </FormControl>
+                        )}
                       />
-                    </InputSlot>
-                  </Input>
-                  <FormControlError>
-                    <FormControlErrorIcon as={AlertCircle} />
-                    <FormControlErrorText className="text-error-500">
-                      {errors.password?.message}
-                    </FormControlErrorText>
-                  </FormControlError>
-                </FormControl>
-              )}
-            />
 
-            {/* Forgot Password Link */}
-            <Box className="items-end">
-              <Link href="/(auth)/forgot-password">
-                <Text className="text-primary-500 font-medium text-sm">
-                  Forgot Password?
-                </Text>
-              </Link>
+                      <Controller
+                        control={control}
+                        name="password"
+                        render={({ field: { onChange, onBlur, value } }) => (
+                          <FormControl isInvalid={!!errors.password} size="lg">
+                            <FormControlLabel className="mb-2">
+                              <FormControlLabelText className="text-typography-700 font-medium">
+                                Password
+                              </FormControlLabelText>
+                            </FormControlLabel>
+                            <Input
+                              size="xl"
+                              variant="outline"
+                              className="border-outline-400 focus:border-primary-500 bg-background-100 h-14 rounded-2xl"
+                            >
+                              <InputField
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter your password"
+                                placeholderTextColor="#737373"
+                                className="text-typography-900 text-base"
+                                value={value}
+                                onChangeText={onChange}
+                                onBlur={onBlur}
+                              />
+                              <InputSlot
+                                className="pr-4"
+                                onPress={() => setShowPassword(!showPassword)}
+                              >
+                                <InputIcon
+                                  as={showPassword ? Eye : EyeOff}
+                                  className="text-typography-600"
+                                />
+                              </InputSlot>
+                            </Input>
+                            <FormControlError>
+                              <FormControlErrorIcon as={AlertCircle} />
+                              <FormControlErrorText className="text-error-400">
+                                {errors.password?.message}
+                              </FormControlErrorText>
+                            </FormControlError>
+                          </FormControl>
+                        )}
+                      />
+
+                      <Box className="items-end">
+                        <Link href="/(auth)/forgot-password">
+                          <Text className="text-primary-400 font-medium text-sm">
+                            Forgot Password?
+                          </Text>
+                        </Link>
+                      </Box>
+
+                      <Button
+                        size="xl"
+                        className="bg-primary-500 rounded-2xl h-14 mt-2"
+                        onPress={handleSubmit(onSubmit)}
+                        isDisabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <ButtonSpinner color="#FFFFFF" />
+                        ) : (
+                          <ButtonText className="font-bold text-base">Sign In</ButtonText>
+                        )}
+                      </Button>
+                    </VStack>
+                  </Box>
+
+                  <Center>
+                    <Text className="text-typography-600">
+                      Don&apos;t have an account?{" "}
+                      <Link href="/(auth)/register" className="text-primary-400 font-bold">
+                        Sign Up
+                      </Link>
+                    </Text>
+                  </Center>
+                </VStack>
+              </Center>
             </Box>
-
-            {/* Submit Button */}
-            <Button
-              size="xl"
-              className="bg-primary-500 hover:bg-primary-600 active:bg-primary-700 rounded-full h-14 mt-6 shadow-soft-1"
-              onPress={handleSubmit(onSubmit)}
-              isDisabled={isLoading}
-            >
-              {isLoading ? (
-                <ButtonSpinner color="#FFFFFF" />
-              ) : (
-                <ButtonText className="font-bold text-lg">Sign In</ButtonText>
-              )}
-            </Button>
-          </VStack>
-
-          {/* Footer Section */}
-          <Center>
-            <Text className="text-typography-400">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/(auth)/register"
-                className="text-primary-500 font-bold"
-              >
-                Sign Up
-              </Link>
-            </Text>
-          </Center>
-        </VStack>
-      </Center>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </Box>
   );
 }

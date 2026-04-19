@@ -8,7 +8,7 @@ import { useAppDispatch } from "@/hooks/reduxHooks";
 import { api } from "@/state-management/apiConfig";
 import { useGetBookProgressQuery } from "@/state-management/services/books/booksApi";
 import { BookJob, JobStep } from "@/type/book";
-import { FileText } from "lucide-react-native";
+import { Clock3, FileText } from "lucide-react-native";
 import { MotiView } from "moti";
 import { useEffect } from "react";
 
@@ -60,49 +60,67 @@ export function InProgressCard({ job }: InProgressCardProps) {
     );
     const progress = latestEvent?.progress ?? STEP_PROGRESS[currentStep] ?? 5;
     const statusLabel = latestEvent?.message ?? STEP_LABELS[currentStep] ?? "Processing...";
+    const createdLabel = new Date(job.createdAt).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+    });
 
     useEffect(() => {
         if (progress === 100 || currentStatus === "COMPLETED") {
             // Refetch all books to update lists
-            dispatch(api.util.invalidateTags(["books"]));
+            dispatch(api.util.invalidateTags(["books"] as any));
         }
     }, [progress, currentStatus, dispatch]);
 
     return (
         <MotiView
-            from={{ opacity: 0.8, scale: 0.98 }}
+            from={{ opacity: 0, translateY: 8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "timing", duration: 1000, loop: true }}
+            transition={{ type: "timing", duration: 450 }}
         >
-            <Box className="bg-background-50 rounded-2xl p-5 border border-outline-100 shadow-sm">
-                <HStack space="md" className="items-center mb-4">
-                    <Center className="w-12 h-12 bg-primary-500/10 rounded-full">
-                        <FileText size={24} className="text-primary-500" />
-                    </Center>
-                    <VStack className="flex-1">
-                        <Text className="text-typography-900 font-bold text-lg truncate" numberOfLines={1}>
-                            {job.originalFilename}
-                        </Text>
-                        <Text className="text-typography-500 text-sm">
-                            {job.totalCharacters > 0 ? `${(job.totalCharacters / 1000).toFixed(1)}k chars` : "Processing..."}
-                        </Text>
+            <Box className="rounded-2xl border border-outline-100 bg-background-50 p-4">
+                <VStack space="md">
+                    <HStack className="items-start justify-between">
+                        <HStack space="sm" className="items-center flex-1">
+                            <Center className="w-11 h-11 rounded-xl bg-primary-500/10 border border-primary-500/20">
+                                <FileText size={20} className="text-primary-500" />
+                            </Center>
+                            <VStack className="flex-1">
+                                <Text
+                                    className="text-typography-900 font-bold text-base"
+                                    numberOfLines={1}
+                                >
+                                    {job.originalFilename}
+                                </Text>
+                                <HStack space="xs" className="items-center">
+                                    <Clock3 size={12} className="text-typography-500" />
+                                    <Text className="text-typography-500 text-xs">{createdLabel}</Text>
+                                </HStack>
+                            </VStack>
+                        </HStack>
+                        <Box className="bg-primary-500/10 border border-primary-500/20 px-2.5 py-1 rounded-full">
+                            <Text className="text-primary-600 text-xs font-bold">{progress}%</Text>
+                        </Box>
+                    </HStack>
+
+                    <VStack space="xs">
+                        <Progress
+                            value={progress}
+                            size="sm"
+                            className="bg-outline-200 h-2 rounded-full"
+                        >
+                            <ProgressFilledTrack className="bg-primary-500 rounded-full" />
+                        </Progress>
+                        <HStack className="justify-between items-center">
+                            <Text className="text-typography-600 text-xs">{statusLabel}</Text>
+                            <Text className="text-typography-500 text-xs">
+                                {job.totalCharacters > 0
+                                    ? `${(job.totalCharacters / 1000).toFixed(1)}k chars`
+                                    : "Analyzing"}
+                            </Text>
+                        </HStack>
                     </VStack>
-                    <Box className="bg-primary-500 px-3 py-1 rounded-full">
-                        <Text className="text-typography-0 text-xs font-bold">
-                            {progress}%
-                        </Text>
-                    </Box>
-                </HStack>
-                <Progress
-                    value={progress}
-                    size="sm"
-                    className="bg-outline-100 h-2 rounded-full"
-                >
-                    <ProgressFilledTrack className="bg-primary-500 rounded-full" />
-                </Progress>
-                <Text className="text-typography-400 text-xs mt-2 text-right">
-                    {statusLabel}
-                </Text>
+                </VStack>
             </Box>
         </MotiView>
     );

@@ -57,6 +57,7 @@ export default function ProfileScreen() {
     { icon: Bell, label: "Notifications" },
     { icon: Shield, label: "Privacy & Security" },
     { icon: Settings, label: "App Settings" },
+    { icon: LogOut, label: "Log Out", action: handleLogout, danger: true },
   ];
 
   return (
@@ -149,31 +150,43 @@ export default function ProfileScreen() {
                     {index > 0 && <Divider className="bg-outline-100" />}
                     <TouchableOpacity
                       className="p-4 flex-row items-center active:bg-background-100"
-                      onPress={() =>
-                        item.route && router.push(item.route as any)
-                      }
+                      onPress={() => {
+                        if (item.action) {
+                          item.action();
+                          return;
+                        }
+                        if (item.route) {
+                          router.push(item.route as any);
+                        }
+                      }}
                     >
-                      <Box className="w-10 h-10 bg-background-200 rounded-full items-center justify-center mr-4">
-                        <item.icon size={20} className="text-typography-900" />
+                      <Box
+                        className={`w-10 h-10 rounded-full items-center justify-center mr-4 ${
+                          item.danger ? "bg-error-500/10" : "bg-background-200"
+                        }`}
+                      >
+                        <item.icon
+                          size={20}
+                          className={
+                            item.danger ? "text-error-500" : "text-typography-900"
+                          }
+                        />
                       </Box>
-                      <Text className="flex-1 text-typography-900 font-medium text-base">
+                      <Text
+                        className={`flex-1 font-medium text-base ${
+                          item.danger ? "text-error-500" : "text-typography-900"
+                        }`}
+                      >
                         {item.label}
                       </Text>
-                      <ChevronRight size={20} className="text-typography-400" />
+                      {!item.danger && (
+                        <ChevronRight size={20} className="text-typography-400" />
+                      )}
                     </TouchableOpacity>
                   </React.Fragment>
                 ))}
               </VStack>
             </VStack>
-
-            {/* Logout */}
-            <TouchableOpacity
-              onPress={handleLogout}
-              className="flex-row items-center justify-center p-4 rounded-2xl border border-error-500/20 bg-error-500/5 active:bg-error-500/10"
-            >
-              <LogOut size={20} className="text-error-500 mr-2" />
-              <Text className="text-error-500 font-bold">Log Out</Text>
-            </TouchableOpacity>
 
             <VStack className="items-center mt-6">
               <Image

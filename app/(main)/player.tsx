@@ -14,7 +14,7 @@ import {
   SkipForward,
 } from "lucide-react-native";
 import { MotiView } from "moti";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Dimensions, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -49,7 +49,7 @@ export default function PlayerScreen() {
   // Use refs for values that need to be accessed in callbacks without causing re-renders
   const soundRef = useRef<Audio.Sound | null>(null);
   const isSeekingRef = useRef(false);
-  const seekTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const seekTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSeekRef = useRef<number | null>(null);
   const lastSeekTimeRef = useRef(0);
 
@@ -161,28 +161,31 @@ export default function PlayerScreen() {
   };
 
   // Debounced seek function - waits for user to stop seeking before actually seeking
-  const performSeek = async (seekPosition: number) => {
-    if (!soundRef.current || !duration) return;
+  const performSeek = useCallback(
+    async (seekPosition: number) => {
+      if (!soundRef.current || !duration) return;
 
-    const now = Date.now();
-    // Throttle: minimum 300ms between seek operations
-    if (now - lastSeekTimeRef.current < 300) {
-      // Queue this seek for later
-      pendingSeekRef.current = seekPosition;
-      return;
-    }
-
-    try {
-      lastSeekTimeRef.current = now;
-      await soundRef.current.setPositionAsync(seekPosition);
-      pendingSeekRef.current = null;
-    } catch (error: any) {
-      // Ignore "Seeking interrupted" errors - they're expected when seeking rapidly
-      if (!error?.message?.includes("Seeking interrupted")) {
-        console.error("❌ Error seeking:", error);
+      const now = Date.now();
+      // Throttle: minimum 300ms between seek operations
+      if (now - lastSeekTimeRef.current < 300) {
+        // Queue this seek for later
+        pendingSeekRef.current = seekPosition;
+        return;
       }
-    }
-  };
+
+      try {
+        lastSeekTimeRef.current = now;
+        await soundRef.current.setPositionAsync(seekPosition);
+        pendingSeekRef.current = null;
+      } catch (error: any) {
+        // Ignore "Seeking interrupted" errors - they're expected when seeking rapidly
+        if (!error?.message?.includes("Seeking interrupted")) {
+          console.error("❌ Error seeking:", error);
+        }
+      }
+    },
+    [duration],
+  );
 
   // Handle slider change while dragging (just update UI, don't seek yet)
   const handleSliderChange = (value: number) => {
@@ -263,7 +266,7 @@ export default function PlayerScreen() {
     }, 350);
 
     return () => clearInterval(interval);
-  }, [duration]);
+  }, [performSeek]);
 
   // Log API response
   useEffect(() => {
@@ -286,15 +289,17 @@ export default function PlayerScreen() {
     return () => clearInterval(interval);
   }, []);
 
+  const artworkSize = Math.min(width * 0.78, 360);
+
   return (
     <Box className="flex-1 bg-background-950">
       {/* Animated Background */}
       <Box className="absolute inset-0 overflow-hidden">
         <MotiView
           animate={{
-            translateX: blobState === 0 ? -50 : 50,
-            translateY: blobState === 0 ? -50 : 50,
-            scale: blobState === 0 ? 1 : 1.2,
+            translateX: blobState === 0 ? -40 : 35,
+            translateY: blobState === 0 ? -45 : 40,
+            scale: blobState === 0 ? 0.95 : 1.15,
           }}
           transition={{
             type: "timing",
@@ -302,20 +307,20 @@ export default function PlayerScreen() {
           }}
           style={{
             position: "absolute",
-            top: "10%",
-            left: "10%",
-            width: width * 0.8,
-            height: width * 0.8,
-            borderRadius: width * 0.4,
-            backgroundColor: "#3b82f6", // primary-500 approx
-            opacity: 0.2,
+            top: "8%",
+            left: "8%",
+            width: width * 0.78,
+            height: width * 0.78,
+            borderRadius: width * 0.39,
+            backgroundColor: "#2563EB",
+            opacity: 0.24,
           }}
         />
         <MotiView
           animate={{
-            translateX: blobState === 0 ? 50 : -50,
-            translateY: blobState === 0 ? 100 : -50,
-            scale: blobState === 0 ? 1.2 : 1,
+            translateX: blobState === 0 ? 40 : -45,
+            translateY: blobState === 0 ? 85 : -35,
+            scale: blobState === 0 ? 1.1 : 0.92,
           }}
           transition={{
             type: "timing",
@@ -323,17 +328,38 @@ export default function PlayerScreen() {
           }}
           style={{
             position: "absolute",
-            bottom: "20%",
+            bottom: "16%",
             right: "10%",
             width: width * 0.7,
             height: width * 0.7,
             borderRadius: width * 0.35,
-            backgroundColor: "#a855f7", // purple-500 approx
-            opacity: 0.2,
+            backgroundColor: "#0891B2",
+            opacity: 0.22,
+          }}
+        />
+        <MotiView
+          animate={{
+            translateX: blobState === 0 ? 0 : 18,
+            translateY: blobState === 0 ? 0 : -18,
+            scale: blobState === 0 ? 1.05 : 0.94,
+          }}
+          transition={{
+            type: "timing",
+            duration: 4300,
+          }}
+          style={{
+            position: "absolute",
+            top: "42%",
+            left: "-18%",
+            width: width * 0.6,
+            height: width * 0.6,
+            borderRadius: width * 0.3,
+            backgroundColor: "#0F766E",
+            opacity: 0.16,
           }}
         />
         <LinearGradient
-          colors={["transparent", "#181818"]}
+          colors={["#11131800", "#0E1015E6", "#0E1015"]}
           style={{
             position: "absolute",
             left: 0,
@@ -348,37 +374,45 @@ export default function PlayerScreen() {
         <VStack className="flex-1 p-6 justify-between">
           {/* Header */}
           <HStack className="justify-between items-center">
-            <TouchableOpacity onPress={() => router.back()} className="p-2">
-              <ChevronDown size={28} className="text-typography-500" />
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="w-11 h-11 rounded-full border border-outline-700 items-center justify-center"
+              style={{ backgroundColor: "rgba(24, 23, 25, 0.72)" }}
+              activeOpacity={0.8}
+            >
+              <ChevronDown size={24} className="text-typography-800" />
             </TouchableOpacity>
-            <Text className="text-typography-500 font-medium text-xs uppercase tracking-widest">
+            <Text className="text-typography-500 font-semibold text-[11px] uppercase tracking-[2px]">
               Now Playing
             </Text>
-            <TouchableOpacity className="p-2">
-              <MoreHorizontal size={24} className="text-typography-500" />
+            <TouchableOpacity
+              className="w-11 h-11 rounded-full border border-outline-700 items-center justify-center"
+              style={{ backgroundColor: "rgba(24, 23, 25, 0.72)" }}
+              activeOpacity={0.8}
+            >
+              <MoreHorizontal size={22} className="text-typography-800" />
             </TouchableOpacity>
           </HStack>
 
           {/* Album Art */}
-          <Center className="flex-1 my-8">
+          <Center className="flex-1 my-7">
             <MotiView
               from={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", damping: 15 }}
+              transition={{ type: "spring", damping: 16 }}
               style={{
-                width: width * 0.8,
-                height: width * 0.8,
+                width: artworkSize,
+                height: artworkSize,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 20 },
-                shadowOpacity: 0.5,
-                shadowRadius: 25,
-                elevation: 10,
+                shadowOpacity: 0.45,
+                shadowRadius: 28,
+                elevation: 14,
               }}
             >
-              <Box className="w-full h-full bg-background-200 rounded-3xl overflow-hidden border border-outline-100/10">
-                {/* Placeholder for actual image */}
+              <Box className="w-full h-full rounded-3xl overflow-hidden border border-outline-700/60">
                 <LinearGradient
-                  colors={["#333", "#111"]}
+                  colors={["#1E293B", "#0F172A", "#111827"]}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -386,8 +420,25 @@ export default function PlayerScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <Text className="text-typography-500 font-heading text-6xl opacity-20">
-                    {book.title.charAt(0)}
+                  <MotiView
+                    animate={{ scale: isPlaying ? [1, 1.04, 1] : 1 }}
+                    transition={{
+                      type: "timing",
+                      duration: 2400,
+                      loop: isPlaying,
+                    }}
+                  >
+                    <Box className="w-24 h-24 rounded-3xl bg-white/10 border border-white/20 items-center justify-center">
+                      <Text className="text-white/70 font-heading text-5xl">
+                        {book.title.charAt(0)}
+                      </Text>
+                    </Box>
+                  </MotiView>
+                  <Text className="text-white/70 text-xs uppercase tracking-[2px] mt-5">
+                    Ovidio Player
+                  </Text>
+                  <Text className="text-white/45 text-[10px] uppercase tracking-[2px] mt-1">
+                    Immersive Audio
                   </Text>
                 </LinearGradient>
               </Box>
@@ -395,120 +446,173 @@ export default function PlayerScreen() {
           </Center>
 
           {/* Track Info & Controls */}
-          <VStack space="4xl" className="mb-8">
-            {/* Title & Author */}
-            <VStack space="xs" className="items-start">
-              <Heading
-                size="2xl"
-                className="text-typography-900 font-heading"
-                numberOfLines={1}
-              >
-                {title || book.title}
-              </Heading>
-              <Text
-                className="text-typography-500 text-lg font-medium"
-                numberOfLines={1}
-              >
-                {audioData?.backgroundTrack
-                  ? `🎵 ${audioData.backgroundTrack}`
-                  : audioLoading
-                    ? "Loading..."
-                    : book.author}
-              </Text>
-            </VStack>
+          <Box className="rounded-[28px] border border-outline-700/70 px-5 pt-5 pb-6">
+            <LinearGradient
+              colors={["rgba(24,23,25,0.86)", "rgba(17,18,23,0.92)"]}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderRadius: 28,
+              }}
+            />
+            <VStack space="2xl">
+              {/* Title & Author */}
+              <VStack space="xs" className="items-start">
+                <Heading
+                  size="2xl"
+                  className="text-typography-900 font-heading"
+                  numberOfLines={1}
+                >
+                  {title || book.title}
+                </Heading>
+                <Text
+                  className="text-typography-500 text-base font-medium"
+                  numberOfLines={1}
+                >
+                  {audioData?.backgroundTrack
+                    ? `Background: ${audioData.backgroundTrack}`
+                    : audioLoading
+                      ? "Loading audio..."
+                      : book.author}
+                </Text>
+              </VStack>
 
-            {/* Progress Bar */}
-            <VStack space="sm">
-              <Slider
-                value={progress}
-                maxValue={100}
-                onChange={handleSliderChange}
-                onChangeEnd={handleSeekEnd}
-                size="md"
-                orientation="horizontal"
-                isDisabled={!soundRef.current}
-                isReversed={false}
-              >
-                <SliderTrack className="bg-outline-200 h-1 rounded-full">
-                  <SliderFilledTrack className="bg-typography-900" />
-                </SliderTrack>
-                <SliderThumb className="bg-typography-900 w-3 h-3" />
-              </Slider>
-              <HStack className="justify-between">
-                <Text className="text-typography-500 text-xs font-medium">
-                  {formatTime(position)}
-                </Text>
-                <Text className="text-typography-500 text-xs font-medium">
-                  -{formatTime(duration - position)}
-                </Text>
+              {/* Progress Bar */}
+              <VStack space="sm">
+                <Slider
+                  value={progress}
+                  maxValue={100}
+                  onChange={handleSliderChange}
+                  onChangeEnd={handleSeekEnd}
+                  size="md"
+                  orientation="horizontal"
+                  isDisabled={!soundRef.current}
+                  isReversed={false}
+                >
+                  <SliderTrack className="bg-outline-600 h-1.5 rounded-full">
+                    <SliderFilledTrack className="bg-primary-500" />
+                  </SliderTrack>
+                  <SliderThumb className="bg-primary-500 w-3.5 h-3.5" />
+                </Slider>
+                <HStack className="justify-between">
+                  <Box className="px-2.5 py-1 rounded-full bg-background-800/90 border border-outline-700">
+                    <Text className="text-typography-500 text-[11px] font-semibold">
+                      {formatTime(position)}
+                    </Text>
+                  </Box>
+                  <Box className="px-2.5 py-1 rounded-full bg-background-800/90 border border-outline-700">
+                    <Text className="text-typography-500 text-[11px] font-semibold">
+                      -{formatTime(duration - position)}
+                    </Text>
+                  </Box>
+                </HStack>
+              </VStack>
+
+              {/* Main Controls */}
+              <HStack className="justify-between items-center">
+                <TouchableOpacity
+                  onPress={skipBackward}
+                  className="w-12 h-12 rounded-full bg-background-800 border border-outline-700 items-center justify-center"
+                  activeOpacity={0.8}
+                >
+                  <RotateCcw size={21} className="text-typography-800" />
+                  <Text className="absolute text-[8px] font-bold text-typography-800 mt-5">
+                    10
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="w-12 h-12 rounded-full bg-background-800 border border-outline-700 items-center justify-center"
+                  activeOpacity={0.8}
+                >
+                  <SkipBack
+                    size={22}
+                    className="text-typography-900"
+                    fill="currentColor"
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={togglePlayPause}
+                  disabled={isAudioLoading || audioLoading || !audioData?.url}
+                  className="w-20 h-20 rounded-full justify-center items-center shadow-lg active:opacity-90"
+                  style={{
+                    backgroundColor:
+                      isAudioLoading || audioLoading || !audioData?.url
+                        ? "#3A3D45"
+                        : "#3B82F6",
+                  }}
+                >
+                  {isAudioLoading || audioLoading ? (
+                    <ActivityIndicator size="large" color="#FFFFFF" />
+                  ) : isPlaying ? (
+                    <Pause
+                      size={34}
+                      className="text-white"
+                      fill="currentColor"
+                    />
+                  ) : (
+                    <Play
+                      size={34}
+                      className="text-white ml-1"
+                      fill="currentColor"
+                    />
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="w-12 h-12 rounded-full bg-background-800 border border-outline-700 items-center justify-center"
+                  activeOpacity={0.8}
+                >
+                  <SkipForward
+                    size={22}
+                    className="text-typography-900"
+                    fill="currentColor"
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={skipForward}
+                  className="w-12 h-12 rounded-full bg-background-800 border border-outline-700 items-center justify-center"
+                  activeOpacity={0.8}
+                >
+                  <RotateCw size={21} className="text-typography-800" />
+                  <Text className="absolute text-[8px] font-bold text-typography-800 mt-5">
+                    10
+                  </Text>
+                </TouchableOpacity>
+              </HStack>
+
+              {/* Bottom Actions */}
+              <HStack className="justify-between items-center">
+                <TouchableOpacity
+                  className="px-3.5 py-2 rounded-full bg-background-800 border border-outline-700"
+                  activeOpacity={0.8}
+                >
+                  <HStack space="xs" className="items-center">
+                    <ListMusic size={16} className="text-typography-600" />
+                    <Text className="text-typography-600 text-xs font-medium">
+                      Queue
+                    </Text>
+                  </HStack>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="px-3.5 py-2 rounded-full bg-background-800 border border-outline-700"
+                  activeOpacity={0.8}
+                >
+                  <HStack space="xs" className="items-center">
+                    <Airplay size={16} className="text-typography-600" />
+                    <Text className="text-typography-600 text-xs font-medium">
+                      Output
+                    </Text>
+                  </HStack>
+                </TouchableOpacity>
               </HStack>
             </VStack>
-
-            {/* Main Controls */}
-            <HStack className="justify-between items-center px-4">
-              <TouchableOpacity onPress={skipBackward} className="p-2">
-                <RotateCcw size={28} className="text-typography-900" />
-                <Text className="absolute top-3 left-3 text-[8px] font-bold text-typography-900 text-center w-full">
-                  10
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity className="p-2">
-                <SkipBack
-                  size={32}
-                  className="text-typography-900"
-                  fill="currentColor"
-                />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={togglePlayPause}
-                disabled={isAudioLoading || audioLoading || !audioData?.url}
-                className="w-20 h-20 bg-typography-900 rounded-full justify-center items-center shadow-lg active:scale-95"
-              >
-                {isAudioLoading || audioLoading ? (
-                  <ActivityIndicator size="large" color="#181818" />
-                ) : isPlaying ? (
-                  <Pause
-                    size={36}
-                    className="text-background-950"
-                    fill="currentColor"
-                  />
-                ) : (
-                  <Play
-                    size={36}
-                    className="text-background-950 ml-1"
-                    fill="currentColor"
-                  />
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity className="p-2">
-                <SkipForward
-                  size={32}
-                  className="text-typography-900"
-                  fill="currentColor"
-                />
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={skipForward} className="p-2">
-                <RotateCw size={28} className="text-typography-900" />
-                <Text className="absolute top-3 left-3 text-[8px] font-bold text-typography-900 text-center w-full">
-                  10
-                </Text>
-              </TouchableOpacity>
-            </HStack>
-
-            {/* Bottom Actions */}
-            <HStack className="justify-between items-center mt-4 px-4">
-              <TouchableOpacity className="p-2">
-                <ListMusic size={24} className="text-typography-500" />
-              </TouchableOpacity>
-              <TouchableOpacity className="p-2">
-                <Airplay size={24} className="text-typography-500" />
-              </TouchableOpacity>
-            </HStack>
-          </VStack>
+          </Box>
         </VStack>
       </SafeAreaView>
     </Box>
