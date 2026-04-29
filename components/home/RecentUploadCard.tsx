@@ -37,7 +37,7 @@ export function RecentUploadCard({ book }: RecentUploadCardProps) {
       <Box className="w-44 bg-background-50 rounded-2xl p-3 border border-outline-100">
         <Box className="w-full aspect-[3/4] rounded-xl mb-3 relative overflow-hidden">
           <LinearGradient
-            colors={["#e8efff", "#dbe8ff", "#eef4ff"]}
+            colors={["#111827", "#1E293B", "#0F172A"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={{ width: "100%", height: "100%" }}
@@ -49,7 +49,7 @@ export function RecentUploadCard({ book }: RecentUploadCardProps) {
             </Center>
           </LinearGradient>
 
-          <Box className="absolute top-2 left-2 bg-white/90 px-2 py-1 rounded-md border border-outline-100">
+          <Box className="absolute top-2 left-2 bg-background-0/90 px-2 py-1 rounded-md border border-outline-100">
             <Text className="text-typography-700 text-[10px] font-semibold uppercase tracking-wide">
               Ready
             </Text>
@@ -59,7 +59,7 @@ export function RecentUploadCard({ book }: RecentUploadCardProps) {
             <Text className="text-white text-[10px] font-medium">{formattedDuration}</Text>
           </Box>
 
-          <Box className="absolute bottom-2 left-2 w-8 h-8 rounded-full bg-white/90 border border-outline-100 items-center justify-center">
+          <Box className="absolute bottom-2 left-2 w-8 h-8 rounded-full bg-background-0/90 border border-outline-100 items-center justify-center">
             <Play size={14} className="text-primary-500 ml-0.5" fill="currentColor" />
           </Box>
         </Box>

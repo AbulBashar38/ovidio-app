@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/logos/ovidio_logo.png",
     "scheme": "ovidioapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,

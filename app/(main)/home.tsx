@@ -66,7 +66,7 @@ export default function HomeScreen() {
   return (
     <Box className="flex-1 bg-background-0">
       <LinearGradient
-        colors={["#f8fbff", "#f4f7fc", "#f2f5f9"]}
+        colors={["#070A12", "#10131D", "#181719"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
@@ -82,7 +82,7 @@ export default function HomeScreen() {
           width: 240,
           height: 240,
           borderRadius: 120,
-          backgroundColor: "rgba(59,130,246,0.18)",
+          backgroundColor: "rgba(59,130,246,0.22)",
         }}
       />
       <MotiView
@@ -96,7 +96,7 @@ export default function HomeScreen() {
           width: 220,
           height: 220,
           borderRadius: 110,
-          backgroundColor: "rgba(99,102,241,0.14)",
+          backgroundColor: "rgba(99,102,241,0.18)",
         }}
       />
 
@@ -160,17 +160,29 @@ export default function HomeScreen() {
               <LowCreditsWarning credits={credits} />
             )}
 
-            <Box className="rounded-3xl border border-outline-100 bg-background-0 p-4">
-              <InProgressSection jobs={inProgressBooks} />
-            </Box>
+            {inProgressBooks?.length ? (
+              <Box className="rounded-3xl border border-outline-100 bg-background-0 p-4">
+                <InProgressSection jobs={inProgressBooks} />
+              </Box>
+            ) : (
+              <></>
+            )}
 
-            <Box className="rounded-3xl border border-outline-100 bg-background-0 p-4">
-              <RecentUploadsSection books={recentBooks} />
-            </Box>
+            {recentBooks?.length ? (
+              <Box className="rounded-3xl border border-outline-100 bg-background-0 p-4">
+                <RecentUploadsSection books={recentBooks} />
+              </Box>
+            ) : (
+              <></>
+            )}
 
-            <Box className="rounded-3xl border border-outline-100 bg-background-0 p-4 mb-4">
-              <AllUploadsSection books={data?.jobs || []} />
-            </Box>
+            {data?.jobs?.length ? (
+              <Box className="rounded-3xl border border-outline-100 bg-background-0 p-4 mb-4">
+                <AllUploadsSection books={data?.jobs || []} />
+              </Box>
+            ) : (
+              <></>
+            )}
           </VStack>
         </ScrollView>
       </SafeAreaView>

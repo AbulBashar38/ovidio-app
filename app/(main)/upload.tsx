@@ -166,7 +166,7 @@ export default function UploadScreen() {
   return (
     <Box className="flex-1 bg-background-0">
       <LinearGradient
-        colors={["#f8fbff", "#f4f7fc", "#eef3f9"]}
+        colors={["#070A12", "#10131D", "#181719"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
@@ -182,7 +182,7 @@ export default function UploadScreen() {
           borderRadius: 120,
           top: -80,
           right: -90,
-          backgroundColor: "rgba(59,130,246,0.16)",
+          backgroundColor: "rgba(59,130,246,0.22)",
         }}
       />
       <MotiView
@@ -196,7 +196,7 @@ export default function UploadScreen() {
           borderRadius: 110,
           bottom: 70,
           left: -70,
-          backgroundColor: "rgba(6,182,212,0.16)",
+          backgroundColor: "rgba(6,182,212,0.18)",
         }}
       />
 
